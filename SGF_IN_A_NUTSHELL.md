@@ -6,7 +6,7 @@ SGF is an architecture for grounded machine meaning: it turns prose and other in
 
 You can read it as:
 
-> The Semantic Web, for real this time: Synapses instead of triples, a fixed 15‑role grammar instead of predicate explosion, and a typed governance language that can actually stop unsafe acts.
+> The Semantic Web, for real this time: instead of RDF triples with predicate explosion in the edges, SGF uses a hub-and-spoke format known as 'Synapses' which position the verb in the hub and use a fixed 15‑role grammar of semantic roles in the spokes, and a typed governance language that can actually stop unsafe acts.
 
 ### The semantic substrate
 
