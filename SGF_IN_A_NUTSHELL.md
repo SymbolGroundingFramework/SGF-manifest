@@ -10,7 +10,8 @@ You can read it as:
 
 ### The semantic substrate
 
-- Core Lexicon and Canonical IDs give shared sense‑level addresses for meaning, with polyhierarchic ISA chains down to a Prime Registry of about 65 semantic primitives.  
+- Core Lexicon and Canonical IDs give shared sense‑level addresses for meaning, with polyhierarchic ISA chains down to a Prime Registry of about 65 semantic primitives.
+- GLEAN acts as the ingestion pipeline, compiling raw prose and other inputs into grounded, verifiable Synapses. It operates as a disciplined "court reporter"—extracting only what is evidence-backed and explicitly marking gaps where grounding fails.
 - Synapses are the atomic units of structured meaning: one VerbHub plus role‑bound Spokes from a fixed set of 15 semantic roles, keeping “who did what to whom, when, where, how, and why” together as one claim‑bearing object.  
 - Frames and Groups layer epistemic, rhetorical, normative, and perspective context on top (fact vs allegation vs rule vs fiction, whose point of view, which TrustLens), and assemble larger arguments, narratives, and rule sets as graphs instead of flat documents.
 
