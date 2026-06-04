@@ -8,13 +8,15 @@ The Symbol Grounding Framework (SGF) is an architecture for turning language and
 
 You will find formal RFC-style technical specifications for the SGF in the `./specs`/ folder. 
 
-You can find all the books in the `./books` folder, or order print copies on Amazon.
+You can grab all the books in the SGF book series for free in the `./books` folder, or order print copies on [Amazon](https://www.amazon.com/dp/B0H3FGSPK6).
 
 *To understand why this framework was built, begin here, with the preface to **The Architecture of Meaning** (Volume 1 of the SGF Book Series):*
 
-After you finish reading this, the [TECHNICAL_OVERVIEW.md](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/TECHNICAL_OVERVIEW.md) will give you a deeper understanding.
+After you finish reading this, the [SGF_IN_A_NUTSHELL.md](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/SGF_IN_A_NUTSHELL.md) will give you a quick overview.
 
-And after that, the [SGF_CONTEXT_FOR_SYSTEMS_AND_LLM_ASSISTANTS.md](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/SGF_CONTEXT_FOR_SYSTEMS_AND_LLM_ASSISTANTS.md) will give you some additional insights.
+And then, the [TECHNICAL_OVERVIEW.md](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/TECHNICAL_OVERVIEW.md) will give you a deeper understanding.
+
+And after that, the [SGF_CONTEXT_FOR_SYSTEMS_AND_LLM_ASSISTANTS.md](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/SGF_CONTEXT_FOR_SYSTEMS_AND_LLM_ASSISTANTS.md) will give you additional insights.
 
 ***
 The digital age was built at the mouth of a river whose source it never found.
