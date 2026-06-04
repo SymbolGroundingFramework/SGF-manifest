@@ -20,13 +20,13 @@ You can read it as:
 - AFP (Act and Federation Protocol) declares what each message is doing as a communication move – INFORM, ADVISE, QUERY, REQUEST, COMMAND, PROPOSE, ACCEPT, REFUSE, PROMISE, CONFIRM, CANCEL, ACK, ERROR – so machines exchange not just content but participation moves, under receiver sovereignty.  
 - Omega is a typed governance language that lets systems express must, must‑not, may, exceptions, and mutation as rules over SGF objects and AFP acts, and compile those rules into checks that run before a plan or COMMAND is admitted.
 
-### The four‑book core
+### The six‑book core
 
-The SGF series is four publication‑ready volumes:
+The SGF series is six volumes:
 
 | Volume | Title                     | What it proves / covers                                      |
 |--------|---------------------------|---------------------------------------------------------------|
-| 0      | Napkin Pitch              | Compressed architectural vision and payload lines.           |
+| PRIMER | Napkin Pitch              | Compressed architectural vision and payload lines.           |
 | 1      | The Architecture of Meaning | Substrate: Core Lexicon, Canonical IDs, Synapses, GLEAN, frames, groups, provenance, media grounding. |
 | 2      | The Third Protocol        | Protocol: HFF, AFP, capability exchange, sidecars, federation, Trust Lenses, Evidence Gates, swarms, Global Ark as consequence space. |
 | 3      | Omega – The Language of Governance | Governance: Omega-Code as typed grammar for rules, permissions, constraints, mutation, and self-amendment. |
