@@ -19,7 +19,7 @@ And after that, the [SGF_CONTEXT_FOR_SYSTEMS_AND_LLM_ASSISTANTS.md](https://gith
 *To understand why this framework was built, begin here, with the preface **How This Architecture Was Found** from the book **The Architecture of Meaning** (Volume 1 of the SGF Book Series):*
 
 ***
-# How This Architecture Was Foun
+## How This Architecture Was Found
 
 The digital age was built at the mouth of a river whose source it never found.
 
