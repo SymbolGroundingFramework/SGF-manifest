@@ -3,6 +3,11 @@
 *This repository contains the technical specifications and full, free PDF manuscripts for the SGF architecture. (You can find all the books in the `./books` folder, or order print copies on Amazon).*
 
 *To understand why this framework was built, begin here, with the preface to **The Architecture of Meaning** (Volume 1 of the SGF Book Series):*
+
+After you finish reading this, the [TECHNICAL_OVERVIEW.md](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/TECHNICAL_OVERVIEW.md) will give you a deeper understanding.
+
+And after that, the [SGF_CONTEXT_FOR_SYSTEMS_AND_LLM_ASSISTANTS.md](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/SGF_CONTEXT_FOR_SYSTEMS_AND_LLM_ASSISTANTS.md) will give you some additional insights.
+
 ***
 The digital age was built at the mouth of a river whose source it never found.
 
