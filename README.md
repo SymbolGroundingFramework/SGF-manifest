@@ -2,7 +2,7 @@
 
 *This repository contains the technical specifications and full, free PDF manuscripts for the SGF architecture.
 
-You will find format RFC formatted technical specifications for the SGF in the `./specs`/ folder. 
+You will find formal RFC-style technical specifications for the SGF in the `./specs`/ folder. 
 
 You can find all the books in the `./books` folder, or order print copies on Amazon.
 
