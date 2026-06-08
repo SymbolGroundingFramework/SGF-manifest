@@ -15,6 +15,7 @@ This repository serves as the central manifest for SGF technical specifications 
 ### Documentation & Quick Starts
 
 * **[SGF in a Nutshell](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/SGF_IN_A_NUTSHELL.md)**: A high-level introduction to the framework.
+* **[The Shape of Meaning](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/THE_SHAPE_OF_MEANING.md)**: The white paper on the SGF that explains the reasons *why* behind the architecture.
 * **[Technical Overview](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/TECHNICAL_OVERVIEW.md)**: A deep dive into the architecture.
 * **[Context for Systems & LLM Assistants](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/SGF_CONTEXT_FOR_SYSTEMS_AND_LLM_ASSISTANTS.md)**: Implementation insights for developers and AI agents.
 * **[Backstory](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/BACKSTORY.md)**: The origin of SGF (excerpted from *The Architecture of Meaning*, Volume 1).
