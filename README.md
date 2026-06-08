@@ -16,7 +16,9 @@ And then, the [TECHNICAL_OVERVIEW.md](https://github.com/SymbolGroundingFramewor
 
 And after that, the [SGF_CONTEXT_FOR_SYSTEMS_AND_LLM_ASSISTANTS.md](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/SGF_CONTEXT_FOR_SYSTEMS_AND_LLM_ASSISTANTS.md) will give you additional insights.
 
-To understand how the SGF came into being, read the [BACKSTORY.md](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/BACKSTORY.md) which is excerpted from the book **The Architecture of Meaning** (Volume 1 of the SGF Book Series)*
+To understand how the SGF came into being, read the [BACKSTORY.md](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/BACKSTORY.md) which is excerpted from the book **The Architecture of Meaning** (Volume 1 of the SGF Book Series).
+
+
 
 
 
