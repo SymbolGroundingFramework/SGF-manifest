@@ -21,7 +21,7 @@ This repository serves as the central manifest for SGF technical specifications 
 
 ### Technical Specifications
 
-* **[./specs]([https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/specs](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/specs)**: Contains formal, RFC-style technical specifications for the SGF architecture.
+* **[RFC specifications](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/specs)**: Contains formal, RFC-style technical specifications for the SGF architecture.
 
 ### Book Series
 
