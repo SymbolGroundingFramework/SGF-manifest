@@ -8,7 +8,7 @@ This repository contains the technical specifications and full, free PDF manuscr
 
 You will find formal RFC-style technical specifications for the SGF in the `./specs`/ folder. 
 
-You can grab all the books in the SGF book series for free in the [`./books`] folder: ([https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/TECHNICAL_OVERVIEW.md](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/books))
+You can grab all the books in the SGF book series for free in the `./books` folder: ([[https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/TECHNICAL_OVERVIEW.md](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/books)](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/books))
 
 or order print copies on [Amazon](https://www.amazon.com/dp/B0H3FGSPK6).
 
