@@ -1126,4 +1126,9 @@ The architecture is yours now. Take it.
 
 - Repository: github.com/SymbolGroundingFramework/SGF-manifest
 - Landing: symbolgrounding.io
-- Books: https://www.amazon.com/dp/B0H3FGSPK6
+- Books in PDF form: https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/books
+- Books in print form: https://www.amazon.com/dp/B0H3FGSPK6
+
+  
+
+
