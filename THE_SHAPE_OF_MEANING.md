@@ -1118,16 +1118,36 @@ RDF was built for the web. SGF is built for federated reasoning across systems t
 
 TCP/IP moved bytes. HTTP moved documents. SGF moves grounded meaning. The lexicon supplies the vocabulary. Synapses supply the grammar. Canonical IDs bind them. Everything else is consequence.
 
-The architecture is yours now. Take it.
+The architecture is yours now. Take it. Build something.
+
+*—James Lee Stäkelum*
 
 ---
 
 **Links**
 
-- Repository: github.com/SymbolGroundingFramework/SGF-manifest
-- Landing: symbolgrounding.io
-- Books in PDF form: https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/books
-- Books in print form: https://www.amazon.com/dp/B0H3FGSPK6
+This repository serves as the central manifest for SGF technical specifications and documentation.
+
+### Documentation & Quick Starts
+
+* **[SGF in a Nutshell](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/SGF_IN_A_NUTSHELL.md)**: A high-level introduction to the framework.
+* **[The Shape of Meaning](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/THE_SHAPE_OF_MEANING.md)**: The white paper on the SGF that explains the reasons *why* behind the architecture.
+* **[Technical Overview](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/TECHNICAL_OVERVIEW.md)**: A deep dive into the architecture.
+* **[Context for Systems & LLM Assistants](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/SGF_CONTEXT_FOR_SYSTEMS_AND_LLM_ASSISTANTS.md)**: Context about SGF for prompting AI agents.
+* **[Backstory](https://github.com/SymbolGroundingFramework/SGF-manifest/blob/main/BACKSTORY.md)**: The origin of SGF (excerpted from *The Architecture of Meaning*, Volume 1).
+
+### Technical Specifications
+
+* **[RFC specifications](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/specs)**: Contains formal, RFC-style technical specifications for the SGF architecture.
+
+### Book Series
+
+You can access the full SGF six-volume book series in either digital format (free) or via print:
+
+* **[PDF Books](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/books)**: Free downloadable copies of all six volumes.
+* **[Amazon](https://www.amazon.com/dp/B0H3FGSPK6)**: Order physical print copies.
+ 
+
 
   
 
