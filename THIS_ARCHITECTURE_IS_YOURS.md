@@ -1,0 +1,44 @@
+
+I started this project writing code. But as the system grew more complex, I realized what I really should give you is the architecture. 
+
+The architecture is called the **Symbol Grounding Framework**, or SGF: a way of organizing knowledge so that machines can reason about meaning the way humans do, a protocol for machines to communicate that meaning to each other, a file format for storing it, one or more grammars for expressing it, one or more operating-system designs for running systems built on it, and the supporting concepts, methods, and patterns that hold all of it together. Some of this is described in this volume. Some is described in other volumes in the series.
+
+The architecture isn’t the code. The architecture is the ideas. The ideas can live in any language, and have an infinite number of ways to code it, as long as it conforms to the blueprint. I stopped coding to write a book explaining the architecture. Soon what started as one book turned into a series.
+
+**The architecture is yours.**
+
+I am not claiming ownership of any of it. Not the concepts, not the protocols, not the formats, not the grammars, not the operating-system designs, not anything else in the architecture as it appears in this volume or in any other volume of the series. The whole architecture is placed in the public domain, irrevocably, as it is published. Anyone may use it. No one needs my permission. No fee will ever be charged. I hold no live patent applications and no granted patents on the architecture, and I commit never to file any. No patent claim will ever be made, now or in the future, by me or by anyone acting on my behalf.
+
+The same is true of any code I publish that demonstrates how to build with this architecture. Reference implementations will be released under the Apache 2.0 license. That license lets anyone use, modify, and build on the code, including in commercial products. It comes with a built-in patent peace clause: anyone who uses the code is, by that act, joining a community that has agreed not to use patents as weapons against each other. That mutual peace is the foundation on which everything else is built.
+
+But you don't need my code. The logic in these volumes is complete enough for you to create your own implementations in whatever language you prefer.
+
+What I keep is the books. The words you are reading, the diagrams, the specific way the ideas are explained. These are mine, copyrighted in the ordinary way. Buy the book, read the book, lend the book to a friend, quote the book in your own writing. The standard rules of copyright apply. The architecture inside the book does not depend on the book; you can describe it in your own words, draw your own diagrams, write your own implementation, build your own products, found your own company, and never cite this book at all. You owe me nothing.
+
+Why am I doing this? Because I want this architecture to become a standard for how machines reason about meaning. Standards happen when many people build with them and no single person controls them. Tim Berners-Lee gave away the protocols of the web. Vint Cerf and Bob Kahn gave away the protocols of the internet. Linus Torvalds released the Linux kernel under terms that prevented any single company from owning it. Every foundational technology that became universal did so because its creator chose adoption over ownership. I am making the same choice. The canonical home of the architecture is [*SymbolGrounding.io*](https://symbolgrounding.io).
+
+What I will do, going forward, is write more books in this series, teach what I know, and consult with teams adopting the architecture through my practice, *The Symbol Grounding Company*.
+
+But I will not just be consulting. I intend to build. Through my company, I will write reference code, launch applications, and work to build commercial products that run on SGF. When you see me doing this, you should interpret it as a signal of exactly how much faith I have in this foundation. I want to prove that this architecture can power real, profitable systems. I want to see a thriving global ecosystem, and I want to be an active participant in it. 
+
+I do not know yet if SGF will achieve the global scale I envision. Adoption is not something I can dictate; it is something the community must choose. But I know that if this architecture does take root, it will need a governance model that outlives its creator. 
+
+I make you this permanent promise: the foundation will always remain neutral, and it will remain unified. 
+
+To guarantee this, we must move past the old era of open-source governance. The world does not need SGF to fracture into a dozen proprietary dialects the way early database languages did. Nor should the integrity of a global standard rely on human maintainers bending to the influence of well-resourced players.
+
+Instead, the evolution of the **specification itself** will be governed by an algorithmic gauntlet. Anybody can write their own source code in whatever language they choose. What the gauntlet protects is the architecture—the upgrades from SGF 1.0 to SGF 1.1. 
+
+Whether a new semantic role or an Omega primitive is proposed by a human developer or generated by an AI, it must survive an impartial, rigorous evaluation by an ensemble of frontier language models. These models will score every proposal strictly against the published canon of this book series. Does it break the 15-role grammar? Does it violate the foundational primes? Does it introduce a geometric collision? 
+
+The proposals, the algorithmic reasoning, and the human debates over edge cases will all be public. In the beginning, I will shepherd this process, but I will not override its logic on a whim. This ensures that no entity—no matter how large or heavily funded—can bypass the rules to force a proprietary advantage into the standard. The architecture will be protected by verifiable logic, not by backroom politics. 
+
+My commercial products will sit on the exact same open-domain bedrock available to you. We will share the grammar, and we will compete on merit. 
+
+The ultimate protection for any standard is the freedom to leave it. If anyone, including me, ever tries to capture this architecture, bypass the gauntlet, or betray its neutrality, the community is invited to **fork the specification**. You can take the public-domain blueprint, ignore my books, and build your own consensus without asking my permission. 
+
+I wrote this because the world needs an architecture for symbol grounding more than I need to own one. 
+
+Build something.
+
+*—James Lee Stäkelum*
