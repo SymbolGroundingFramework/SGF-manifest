@@ -11,15 +11,13 @@ I am not claiming ownership of any of it. Not the concepts, not the protocols, n
 
 The same is true of any code I publish that demonstrates how to build with this architecture. Reference implementations will be released under the Apache 2.0 license. That license lets anyone use, modify, and build on the code, including in commercial products. It comes with a built-in patent peace clause: anyone who uses the code is, by that act, joining a community that has agreed not to use patents as weapons against each other. That mutual peace is the foundation on which everything else is built.
 
-But you don't need my code. The logic in these volumes is complete enough for you to create your own implementations in whatever language you prefer.
+But you don't need my code. The logic in the formal RFC specifications I've published, and the books I've published in the SGF Book Series, is complete enough for you to create your own implementations in whatever language you prefer.
 
-What I keep is the books. The words you are reading, the diagrams, the specific way the ideas are explained. These are mine, copyrighted in the ordinary way. Buy the book, read the book, lend the book to a friend, quote the book in your own writing. The standard rules of copyright apply. The architecture inside the book does not depend on the book; you can describe it in your own words, draw your own diagrams, write your own implementation, build your own products, found your own company, and never cite this book at all. You owe me nothing.
+Why am I doing this? Because I want this architecture to become a standard for how machines reason about meaning. Standards happen when many people build with them and no single person controls them. Tim Berners-Lee gave away the protocols of the web. Vint Cerf and Bob Kahn gave away the protocols of the internet. Linus Torvalds released the Linux kernel under terms that prevented any single company from owning it. Every foundational technology that became universal did so because its creator chose adoption over ownership. I am making the same choice.
 
-Why am I doing this? Because I want this architecture to become a standard for how machines reason about meaning. Standards happen when many people build with them and no single person controls them. Tim Berners-Lee gave away the protocols of the web. Vint Cerf and Bob Kahn gave away the protocols of the internet. Linus Torvalds released the Linux kernel under terms that prevented any single company from owning it. Every foundational technology that became universal did so because its creator chose adoption over ownership. I am making the same choice. The canonical home of the architecture is [*SymbolGrounding.io*](https://symbolgrounding.io).
+What I will do, going forward, is write more books in this series, teach what I know, and consult with teams adopting the architecture.
 
-What I will do, going forward, is write more books in this series, teach what I know, and consult with teams adopting the architecture through my practice, *The Symbol Grounding Company*.
-
-But I will not just be consulting. I intend to build. Through my company, I will write reference code, launch applications, and work to build commercial products that run on SGF. When you see me doing this, you should interpret it as a signal of exactly how much faith I have in this foundation. I want to prove that this architecture can power real, profitable systems. I want to see a thriving global ecosystem, and I want to be an active participant in it. 
+But I will not just be consulting. I intend to build. I will write reference code, launch applications, and work to build commercial products that run on SGF. When you see me doing this, you should interpret it as a signal of exactly how much faith I have in this foundation. I want to prove that this architecture can power real, profitable systems. I want to see a thriving global ecosystem, and I want to be an active participant in it. 
 
 I do not know yet if SGF will achieve the global scale I envision. Adoption is not something I can dictate; it is something the community must choose. But I know that if this architecture does take root, it will need a governance model that outlives its creator. 
 
@@ -37,7 +35,7 @@ My commercial products will sit on the exact same open-domain bedrock available 
 
 The ultimate protection for any standard is the freedom to leave it. If anyone, including me, ever tries to capture this architecture, bypass the gauntlet, or betray its neutrality, the community is invited to **fork the specification**. You can take the public-domain blueprint, ignore my books, and build your own consensus without asking my permission. 
 
-I wrote this because the world needs an architecture for symbol grounding more than I need to own one. 
+I published the SGF architecture and open-sourced it because the world needs an architecture for symbol grounding more than I need to own one. 
 
 Build something.
 
