@@ -165,3 +165,10 @@ The explorers searching for the source of the Nile found Lake Victoria. I did no
 This book is the test. It does not claim to contain the final truth of the universe. It claims something smaller and more demanding: that a finite grammar of grounded, claim-bearing structures can become the missing semantic substrate for machines. It defines the Synapse, the lexicon, the proof traces, the frames, the limits, and the wire.
 
 The map is not the river. But a good map changes what can be built along its banks.
+
+*—James Lee Stäkelum*
+***
+
+This is excerpted from the *SGF Book Series*, Volume 1: **The Architecture of Meaning**
+
+
