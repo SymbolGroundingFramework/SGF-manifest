@@ -26,12 +26,12 @@ Every sanctioned extension to Omega is, formally, an invocation of `META_DEFINIT
 
 Each extension declaration must satisfy four conditions:
 
-1. The declaration uses `META_DEFINITION_RULE`, with `TARGET_TYPE` naming the extensible category being enlarged (`ModalityType`, `ResourceTypeID`, `InteractionTypeID`, `TargetTypeID`, `MetricID`, `PropertyID`, or any other category Appendix A admits as extensible).
-2. The declaration is scoped to a profile. No extension is implicitly global. A program that does not import the extension must continue to parse, validate, and execute identically to a program written before the extension existed.
-3. The declaration is governance-checked. The trust elements and accountability chains that apply to primitive instances apply to extension declarations. A `GOVERNANCE_RULE` whose scope covers extension declarations may approve, reject, or return UNKNOWN on a candidate. UNKNOWN means the contract cannot decide, and the extension is provisional pending stewardship review.
-4. The declaration is backward-compatible at the profile boundary. Removing the extension's import must restore the program to a parseable, executable state under the prior vocabulary.
+1. The declaration uses `META_DEFINITION_RULE`, with `TARGET_TYPE` naming the extensible category being enlarged (`MODALITY_TYPE`, `RESOURCE_TYPE_ID`, `INTERACTION_TYPE_ID`, `METRIC_ID`, `PROPERTY_ID`, or any other category Appendix A admits as extensible). `TARGET_TYPE_ID` and formal self-reference target categories are Constitutional and are not extensible.
+2. The declaration is scoped to a profile or conformance environment. No extension is implicitly global. A specification that does not enable the extension category must continue to parse, validate, and execute identically to a specification written before the extension existed.
+3. The declaration is governance-checked. The trust elements and accountability chains that apply to primitive instances apply to extension declarations. A `GOVERNANCE_RULE` whose scope covers extension declarations returns ALLOW, DENY, or UNKNOWN on a candidate. UNKNOWN means the contract cannot decide, and the extension is provisional pending stewardship review.
+4. The declaration is backward-compatible at the profile boundary. Disabling the extension category in the conformance environment must restore the program to a parseable, executable state under the prior vocabulary.
 
-These four conditions are the safety kernel for language evolution. They use the same PASS, REJECT, UNKNOWN vocabulary the rest of the spec uses for runtime governance. The fractal signature is preserved.
+These four conditions are the safety kernel for language evolution. They use the same ALLOW, DENY, UNKNOWN verdict vocabulary used by the runtime governance model. The fractal signature is preserved.
 
 ## D.3 Five Extension Layers and the Reach by Reversibility Map
 
@@ -39,11 +39,11 @@ Extensions are not uniform in cost. They differ along two axes: how much of Omeg
 
 Five layers are named:
 
-- **Composition pattern libraries.** Named, reusable composite structures, the SQL/JOIN analogy already drawn in Appendix A.7. Low reach, high reversibility. Lowest review threshold.
+- **Composition pattern libraries.** Named, reusable composite structures, the SQL/JOIN analogy already drawn in Appendix A.7. These extensions package sanctioned patterns; they do not rewrite the core grammar. Low reach, high reversibility. Lowest review threshold.
 - **Domain ontologies.** Versioned vocabulary packages for specific application domains. Medium reach, high reversibility. Each domain ontology must declare its versioning scheme and a translation contract for cross-version interoperation.
 - **Resource type extensions.** New cost dimensions beyond the canonical set in `RESOURCE_BOUND`. Medium reach, medium reversibility. Each resource type extension must specify monotonicity behavior with respect to existing cost calculations.
 - **Proof protocol extensions.** Alternate verification regimes for `TRUST_ELEMENT`. High reach, low reversibility once trust elements depend on the regime in deployed profiles.
-- **Modality extensions.** New entries in the `MODALITY` vocabulary of `CONTEXT_RULE`, including epistemic and deontic operators beyond the canonical set. High reach, low reversibility, and the hardest case. Each modality extension must include a semantic conservativity argument: the extension must not silently change the truth conditions of programs that do not import it.
+- **Modality extensions.** New entries in the `MODALITY` vocabulary of `CONTEXT_RULE`, including epistemic and deontic operators beyond the canonical set. High reach, low reversibility, and the hardest case. Each modality extension must include a semantic conservativity argument: enabling the extension must not silently change the truth conditions of specifications that do not rely on that extension category.
 
 The contract in D.2 is uniform across all five layers. The review burden is not. A composition pattern library is approvable by any party with a stewardship role. A modality extension requires a process closer to a constitutional convention.
 
@@ -51,9 +51,10 @@ The contract in D.2 is uniform across all five layers. The review burden is not.
 
 The Constitutional tier of the spec is what no extension may touch. Per Chapter 14, the 13 primitive declarations themselves and the EBNF productions of the core grammar sit at the Constitutional tier. To these, Appendix D adds:
 
-- The safety kernel pattern (PASS, REJECT, UNKNOWN as the universal verdict shape).
-- The four meta-primitives' identities and their meta-level role. An extension may enlarge the vocabulary slots of meta-primitives. It may not redefine what they are.
+- The safety kernel pattern (ALLOW, DENY, UNKNOWN as the canonical verdict shape).
+- The four meta-primitives' identities and their meta-level role. An extension may enlarge sanctioned vocabulary slots used by meta-primitives. It may not redefine what they are.
 - The two-profile structure (Strict and Extended), including the static-decidability requirement of Strict.
+- The `TARGET_TYPE_ID` category and the formal self-reference target categories used to address grammar primitives, parser/compiler elements, primitive definitions, Appendix D, and the Constitutional tier.
 - This appendix itself.
 
 These are the spec's voluntary self-binding. No `META_DEFINITION_RULE` invocation may target them. A specification that attempts such targeting is not a malformed extension. It is a different language wearing Omega's syntax.
@@ -63,22 +64,24 @@ These are the spec's voluntary self-binding. No `META_DEFINITION_RULE` invocatio
 Standing to propose an extension is open. Any party may draft a `META_DEFINITION_RULE` invocation and circulate it. Standing to ratify an extension into the canonical vocabulary is not open. Ratification requires:
 
 1. **A rationale record.** A structured artifact answering: what gap does this extension fill, what alternatives were considered, why this design. The rationale record becomes part of the canonical lineage. A ratified extension without a rationale record is malformed.
-2. **Predictive impact modeling.** Before ratification, the candidate extension must be evaluated against the canonical worked-example corpus (Appendix B) and against any registered profile that declares a dependency on the extensible category. The evaluation produces a PASS, REJECT, or UNKNOWN verdict. UNKNOWN blocks ratification pending further analysis.
+2. **Predictive impact modeling.** Before ratification, the candidate extension must be evaluated against the canonical worked-example corpus (Appendix B) and against any registered profile that declares a dependency on the extensible category. The evaluation produces an ALLOW, DENY, or UNKNOWN verdict. UNKNOWN blocks ratification pending further analysis.
 3. **Stewardship approval.** The threshold scales with the layer's position on the reach by reversibility map of D.3.
 
 The separation of standing from ratification is load-bearing. Open proposal makes the canon legible. Closed ratification protects the substrate.
 
 ## D.6 Conflicts, Profile Compatibility, Emergency Revocation
 
-Two ratified extensions may produce conflicting verdicts on the same construct. The resolution mechanism is the priority structure already specified in Appendix A: `GOVERNANCE_RULE` carries an optional numeric `PRIORITY` field with a default of 0; higher numeric values take precedence; when two firing rules share the same priority, conformant evaluators apply deterministic ordering by `RuleID` lexicographically. Extensions that anticipate conflict declare `PRIORITY` explicitly. The mechanism is unchanged for extensions; only its application is.
+Two ratified extensions may produce conflicting verdicts on the same construct. The resolution mechanism is the priority structure already specified in Appendix A: `GOVERNANCE_RULE` carries an optional numeric `PRIORITY` field with a default of 0; higher numeric values take precedence; equal-priority conflicts resolve fail-closed by status order DENY > UNKNOWN > ALLOW; equal-priority same-status ties use lexicographic `RuleID` only to choose the reported rule_id. Extensions that anticipate conflict declare `PRIORITY` explicitly. The mechanism is unchanged for extensions; only its application is.
 
-Profile compatibility is negotiated at load time. A program declares which extensions it depends on. A runtime that does not have the required extensions available rejects the program at load time with a structured diagnostic. Silent fallback is not permitted.
+Profile compatibility is negotiated at load time. A conformant implementation must expose which approved extension categories are enabled for the loaded specification. A specification relying on an extension category not enabled in the conformance environment is rejected at load time with a structured diagnostic. Silent fallback is not permitted.
+
+Extension enablement is part of the conformance environment's registry and host-binding obligations: the implementation must document which extension categories are enabled, their identifiers, their versions if versioned, and the scope and profile in which they are valid.
 
 Emergency revocation pulls a ratified extension from the canonical vocabulary. The mechanism is `TRUST_ELEMENT REVOCATION_PROTOCOL`, applied to the extension's defining `META_DEFINITION_RULE`. Revocation requires a structured cause and produces a structured remediation path for affected profiles. Revocation is irreversible at the canonical level: a revoked extension may be reproposed only as a new extension with a new identifier and a new rationale record.
 
 ## D.7 Self-Reference Closure and Versioning
 
-Appendix D itself sits at the Constitutional tier. The procedure specified here cannot be modified by the procedure specified here. A `META_DEFINITION_RULE` invocation that attempts to target Appendix D's clauses is rejected at parse time on the same structural grounds that reject targeting of the 13 primitive declarations.
+Appendix D itself sits at the Constitutional tier. The procedure specified here cannot be modified by the procedure specified here. A `META_DEFINITION_RULE` invocation that attempts to target Appendix D's clauses is rejected at parse time or load time on the same structural grounds that reject targeting of the 13 primitive declarations. The same closure applies to `TARGET_TYPE_ID` and the frozen self-reference target-category set.
 
 Changes to Appendix D require a spec version increment. Extensions are versioned independently of the core, using semantic versioning. The stewardship method that governs ratifications, contested interpretations, and emergency revocations operates under the public-domain commitment stated in the series front matter and is documented at the canonical home of the architecture. The method is itself amendable only by passing through the method.
 

@@ -28,7 +28,7 @@ The books in the `books/` folder explain the concepts. The `03-OMEGA-*` files in
 
 This appendix is the formal reference for Omega-Code, the pseudocode meta-language introduced in Chapter 4 and employed throughout this volume to specify self-governing autonomous systems. It provides every implementer, verification engineer, or specification author with the complete syntax, grammar, and operational semantics needed to write, parse, and verify Omega-Code without consulting any other document.
 
-Two profiles are formally defined here. The Strict Profile is suitable for policy-evaluation slots whose decidability must be guaranteed at specification time. The Extended Profile admits the full pseudocode meta-language and is appropriate wherever bounded general computation is required. The PROFILE directive at module level declares which profile a specification requires. Every section that follows is annotated with [STRICT], [EXTENDED], or [BOTH] to indicate which profile admits that construct.
+Two profiles are formally defined here. The Strict Profile is suitable for policy-evaluation slots whose decidability must be guaranteed at specification time. The Extended Profile admits the full pseudocode meta-language and is appropriate wherever bounded general computation is required. The PROFILE directive declares the default profile for the compilation unit before modules or top-level statements. Every section that follows is annotated with [STRICT], [EXTENDED], or [BOTH] to indicate which profile admits that construct.
 
 Two documented defects from prior drafts of the Reference Manual are corrected in this appendix. The corrections are applied directly in the grammar and in the relevant primitive sections, and each is accompanied by a footnote.
 
@@ -40,15 +40,15 @@ Omega-Code supports two formally defined operational profiles.
 
 ### A.2.1 Strict Profile [STRICT]
 
-The Strict Profile admits, inside policy-evaluation slots, only the following constructs: Boolean expressions, comparison operations, set-membership tests, and calls to functions whose return type is BOOLEAN. No LOOP, no general recursion, and no mutable state are permitted inside a Strict-profile policy slot. All Strict-profile specifications are statically decidable.
+The Strict Profile admits, inside policy-evaluation slots, only the following constructs: Boolean expressions, comparison operations, set-membership tests, observation lookups, and calls to registered Strict predicate functions. A registered Strict predicate function must be pure, total over its declared input types, deterministic, side-effect-free, non-recursive, terminating by construction, and limited to declared observation inputs. No LOOP, no general recursion, no mutable state, no external I/O, no unregistered host calls, and no user-defined FUNCTION are permitted inside a Strict-profile policy slot. All Strict-profile specifications are statically decidable.
 
 ### A.2.2 Extended Profile [EXTENDED]
 
-The Extended Profile admits the full pseudocode meta-language inside policy slots: IF, LOOP WHILE, LOOP FOR, FUNCTION definitions, and recursion. All Extended-profile execution is subject to a governing RESOURCE_BOUND. If evaluation exceeds the declared bound, the result is UNKNOWN rather than an error; the calling context must handle UNKNOWN as a defined third value.
+The Extended Profile admits the full pseudocode meta-language inside policy slots: IF, LOOP WHILE, LOOP FOR, FUNCTION definitions, and recursion. Any Extended-profile policy-evaluation slot that uses Extended-only constructs must declare a governing CONSTRAINT_SET of one or more RESOURCE_BOUND identifiers. If evaluation exceeds a declared bound, the result is UNKNOWN rather than an error; the calling context must handle UNKNOWN as a defined third value.
 
 ### A.2.3 Profile Declaration [BOTH]
 
-The PROFILE directive appears at module level, before any other statement in a MODULE block:
+The PROFILE directive appears at compilation-unit level, before modules or top-level statements:
 
 ```omega
 PROFILE Strict;
@@ -155,20 +155,20 @@ The following capabilities are intrinsic to Omega-Code. They provide the scaffol
 
 ### A.5.1 Syntax and Grammars [BOTH]
 
-**Purpose:** Omega-Code possesses a formally defined, extensible syntax and grammar. This ensures the language is unambiguous and machine-readable, which is essential for automated processing and formal verification. The grammar itself can be reasoned about and modified via META_DEFINITION_RULE.
+**Purpose:** Omega-Code possesses a formally defined syntax and sanctioned extensibility points. This ensures the language is unambiguous and machine-readable, which is essential for automated processing and formal verification. The core parser productions are Constitutional; META_DEFINITION_RULE extends only sanctioned vocabulary categories and composition patterns outside that core.
 
 **EBNF Syntax:** The grammar is rooted at `<OmegaCode>`. See Section A.10 for the complete grammar.
 
-**Semantics:** Any valid Omega-Code specification must conform to the EBNF rules defined in this appendix. The processing system (parser) will accept only inputs that are parsable according to this grammar. META_DEFINITION_RULE operates on these very EBNF rules, allowing the grammar to evolve in a formally verifiable manner.
+**Semantics:** Any valid Omega-Code specification must conform to the EBNF rules defined in this appendix. The processing system (parser) will accept only inputs that are parsable according to this grammar. META_DEFINITION_RULE does not rewrite the Constitutional parser productions; it operates on the extensible categories admitted by those productions.
 
 ### A.5.2 Basic Control Flow [EXTENDED ONLY]
 
-**Purpose:** Provides core constructs for sequential execution, conditional branching (IF/ELSE), and iterative execution (LOOP). These constructs are admitted only under the Extended Profile inside policy-evaluation slots; they are available unrestricted at the module and function level in both profiles.
+**Purpose:** Provides core constructs for sequential execution, conditional branching (IF/ELSE), and iterative execution (LOOP). These constructs are admitted only under the Extended Profile inside policy-evaluation slots. They may appear in non-policy scaffolding where the grammar admits them, but they must not be reachable from a Strict policy-evaluation slot.
 
 **EBNF Syntax:**
 ```ebnf
-IfStatement   ::= 'IF' <BooleanExpression> 'THEN' <Block> [ 'ELSE' <Block> ] 'END IF'
-LoopStatement ::= 'LOOP' ( 'WHILE' <BooleanExpression> | 'FOR' <VariableName> 'IN' <Range> ) <Block> 'END LOOP'
+IfStatement   ::= 'IF' <BooleanExpression> 'THEN' <Block> [ 'ELSE' <Block> ] 'END IF' [ ';' ]
+LoopStatement ::= 'LOOP' ( 'WHILE' <BooleanExpression> | 'FOR' <VariableName> 'IN' <Range> ) <Block> 'END LOOP' [ ';' ]
 Range         ::= <Expression> 'TO' <Expression> | <Identifier>
 ```
 
@@ -187,7 +187,7 @@ Range         ::= <Expression> 'TO' <Expression> | <Identifier>
 
 **EBNF Syntax:**
 ```ebnf
-FunctionDefinition ::= 'FUNCTION' <FunctionName> '(' [ <ParameterList> ] ')' [ 'RETURNS' <ReturnType> ] <Block> 'END FUNCTION'
+FunctionDefinition ::= 'FUNCTION' <FunctionName> '(' [ <ParameterList> ] ')' [ 'RETURNS' <ReturnType> ] <Block> 'END FUNCTION' [ ';' ]
 FunctionName       ::= <Identifier>
 ParameterList      ::= <Parameter> { ',' <Parameter> }
 Parameter          ::= <ParameterName> ':' <DataType>
@@ -218,11 +218,11 @@ Note: VariableDeclaration is a SimpleStatement and must be terminated by a semic
 
 **EBNF Syntax:**
 ```ebnf
-ModuleDefinition ::= 'MODULE' <ModuleName> <Block> 'END MODULE'
+ModuleDefinition ::= 'MODULE' <ModuleName> <Block> 'END MODULE' [ ';' ]
 ModuleName       ::= <Identifier>
 ```
 
-**Semantics:** Modules define named organizational units. Identifiers declared within a module are scoped to that module. Modules can be nested. Identifiers from other modules are referenced using qualified names, for example `ModuleName.identifier`.
+**Semantics:** Modules define named organizational units. Identifiers declared within a module are scoped to that module. Modules can be nested. The v1.0 canonical grammar uses local identifiers for named references. Host implementations may maintain namespace metadata internally, but dot-qualified reference syntax is not part of the v1.0 core grammar.
 
 ### A.5.6 Primitive Data Types [BOTH]
 
@@ -244,7 +244,7 @@ Literal  ::= 'TRUE' | 'FALSE' | <IntegerLiteral> | <FloatLiteral> | <StringLiter
 
 ### A.5.7 Inherent Actions/Operations [BOTH]
 
-**Purpose:** Predefined, atomic operations intrinsic to the Omega-Code execution environment. They are invoked via ActionCalls or referenced by ActionIDs inside primitive calls. They represent fundamental computational or interaction behaviors available in both profiles.
+**Purpose:** Predefined, atomic operation descriptors registered by the host execution environment. They are invoked via ActionCalls or referenced by ActionIDs inside primitive calls. They represent host-bound computational or interaction behaviors available to the Safety Kernel for authorization and reporting; Omega itself does not execute physical effects.
 
 **EBNF Syntax:**
 ```ebnf
@@ -258,11 +258,11 @@ ActionID   ::= <Identifier>
 - `DECREMENT_ACTION(<Variable>)`: Decrements an integer or float variable by 1.
 - `LOG_ACTION(<Expression>)`: Records the value of the expression to a system log.
 - `SEND_MESSAGE_ACTION(<RecipientID>, <MessageContent>)`: Sends a message to a specified recipient.
-- `PARSE_DATA_ACTION(<RawData>, <SchemaID>)`: Parses raw data according to a schema and returns a structured data object.
+- `HYDRATE_DATA_ACTION(<ExternalDataRef>, <SchemaID>)`: Binds host-provided external data to a structured data object conforming to a schema.
 - `ADJUST_THRESHOLD_BY_FACTOR(<BoundID>, <Factor>)`: Modifies the threshold of a RESOURCE_BOUND.
 - `EXTRACT_TAGGED_CONTENT(<Text>, <Tag>)`: Extracts content from tagged text.
 
-This list is illustrative. Additional actions may be defined and registered for specific implementation environments.
+This list is illustrative. Additional actions may be defined and registered for specific implementation environments. Every ActionID referenced by STATE_TRANSITION, MUTATION_RULE, or PERCEPTION_MAP must resolve at load time to a host action descriptor or declared abstract action in the conformance environment. A descriptor minimally declares the action name, argument signature, return type if any, side-effect class, determinism class, permitted profile or profiles, and resource-bound behavior.
 
 ---
 
@@ -445,32 +445,46 @@ DATA_TYPE_SCHEMA UserProfile :
 
 ### A.6.6 STATE_TRANSITION [BOTH]
 
-**Purpose:** Defines an atomic, conditional change in the state of an entity. It specifies the precondition that must hold before the action, the action itself, and the postcondition that holds after the action completes. An optional reversion protocol allows the transition to be rolled back.
+**Purpose:** Defines an atomic, conditional authorization for a host state change. It specifies the precondition that must hold before the host action may be authorized, the action descriptor itself, and the postcondition to verify after the host reports completion. An optional reversion protocol names host remediation behavior; it is not a guarantee of physical rollback.
 
 **Formal EBNF Syntax:**
 ```ebnf
-StateTransitionCall ::= 'STATE_TRANSITION' <TransitionID> ':' 'SUBJECT' <EntityID> ',' 'PRECONDITION' <BooleanExpression> ',' 'POSTCONDITION' <BooleanExpression> ',' 'ACTION' <ActionID> [ ',' 'REVERSION_PROTOCOL' <ProtocolID> ] [ ',' 'AUTHORIZED_BY' <ElementID> ] [ ',' 'GOVERNED_BY' <RuleID> ]
+StateTransitionCall ::= 'STATE_TRANSITION' <TransitionID> ':' 'SUBJECT' <EntityID> ',' 'PRECONDITION' <BooleanExpression> ',' 'POSTCONDITION' <BooleanExpression> ',' 'ACTION' <ActionID> [ ',' 'REVERSION_PROTOCOL' <ProtocolID> ] [ ',' 'AUTHORIZED_BY' <ElementID> ] ',' 'GOVERNED_BY' <RuleID> [ ',' 'CONSTRAINT_SET' <BoundIDList> ]
 TransitionID        ::= <Identifier>
 ```
 
-**Formal Semantics:** Describes a state change (ACTION) on SUBJECT. PRECONDITION must evaluate to TRUE before ACTION occurs. After ACTION completes, POSTCONDITION will evaluate to TRUE. REVERSION_PROTOCOL defines a method to revert the state to its pre-transition condition if needed. AUTHORIZED_BY, if specified, references the TRUST_ELEMENT that must hold for the transition to fire and that records the authorizing identity for audit. GOVERNED_BY, if specified, references the GOVERNANCE_RULE under whose authority the transition is permitted and that names the normative basis for the change. Together, AUTHORIZED_BY and GOVERNED_BY make the transition's audit record structural rather than implicit: the specification declares who authorized the change and which rule permitted it. Under the Strict Profile, PRECONDITION and POSTCONDITION must be statically decidable Boolean expressions. Under the Extended Profile, they may contain full pseudocode subject to RESOURCE_BOUND.
+**Formal Semantics:** Describes a host action (ACTION) proposed against SUBJECT. PRECONDITION must evaluate to TRUE before the Safety Kernel may authorize the action. After the host reports completion, POSTCONDITION is the verification predicate the kernel or reporting layer evaluates; a false or unobservable postcondition is a structured reportable outcome, not proof that Omega guaranteed or physically executed the transition. REVERSION_PROTOCOL defines a host remediation protocol if needed and authorized. AUTHORIZED_BY, if specified, references the TRUST_ELEMENT that must hold for the transition to fire and that records the authorizing identity for audit. GOVERNED_BY is required and references the GOVERNANCE_RULE under whose authority the transition is permitted. Together, AUTHORIZED_BY and GOVERNED_BY make the transition's audit record structural rather than implicit: the specification declares who authorized the change and which rule permitted it. Under the Strict Profile, PRECONDITION and POSTCONDITION must be statically decidable Boolean expressions. Under the Extended Profile, Extended-only constructs in PRECONDITION, POSTCONDITION, or a transition-local evaluation slot require CONSTRAINT_SET, and each listed bound must resolve to a RESOURCE_BOUND at load time.
 
 **Profile:** [BOTH]. PRECONDITION and POSTCONDITION complexity varies by profile.
 
 **Concrete Example:**
 ```omega
+GOVERNANCE_RULE AllowOrderProcessing :
+    SCOPE ProcessOrder,
+    PREDICATE ( StatusIsPending(CustomerOrder_123) ),
+    ENFORCEMENT_MODE ALLOW_ACTION,
+    PRIORITY 10;
+
 STATE_TRANSITION ProcessOrder :
     SUBJECT CustomerOrder_123,
     PRECONDITION ( StatusIsPending(CustomerOrder_123) ),
     POSTCONDITION ( StatusIsProcessing(CustomerOrder_123) ),
     ACTION UpdateOrderStatusToProcessing,
-    REVERSION_PROTOCOL RollbackOrderStatus;
+    REVERSION_PROTOCOL RollbackOrderStatus,
+    GOVERNED_BY AllowOrderProcessing;
+
+GOVERNANCE_RULE AllowDoorUnlock :
+    SCOPE UnlockDoor,
+    PREDICATE ( IsLocked(SmartLock_A) AND UserAuthenticated(User_Alice) ),
+    ENFORCEMENT_MODE ALLOW_ACTION,
+    PRIORITY 10;
 
 STATE_TRANSITION UnlockDoor :
     SUBJECT SmartLock_A,
     PRECONDITION ( IsLocked(SmartLock_A) AND UserAuthenticated(User_Alice) ),
     POSTCONDITION ( IsUnlocked(SmartLock_A) ),
-    ACTION SendUnlockCommand;
+    ACTION SendUnlockCommand,
+    GOVERNED_BY AllowDoorUnlock;
 ```
 
 ---
@@ -507,15 +521,16 @@ TRUST_ELEMENT DataIntegrityChecked :
 
 ### A.6.8 GOVERNANCE_RULE [BOTH]
 
-**Purpose:** Defines an atomic normative statement, which may be an obligation, a permission, or a prohibition, that governs system behavior within a specified scope. If the Boolean predicate evaluates to true, the named enforcement context determines the response.
+**Purpose:** Defines an atomic normative statement, which may be an obligation, a permission, or a prohibition, that governs system behavior within a specified scope. If the Boolean predicate evaluates to true, the named enforcement mode determines the response.
 
 **Formal EBNF Syntax:**
 ```ebnf
-GovernanceRuleCall ::= 'GOVERNANCE_RULE' <RuleID> ':' 'SCOPE' <ScopeID> ',' 'PREDICATE' <BooleanExpression> ',' 'ENFORCEMENT_CONTEXT' <ContextID> [ ',' 'PRIORITY' <NumericExpression> ]
+GovernanceRuleCall ::= 'GOVERNANCE_RULE' <RuleID> ':' 'SCOPE' <ScopeID> ',' 'PREDICATE' <BooleanExpression> ',' 'ENFORCEMENT_MODE' <EnforcementModeID> [ ',' 'PRIORITY' <NumericExpression> ] [ ',' 'CONSTRAINT_SET' <BoundIDList> ]
 ScopeID            ::= <Identifier>
+EnforcementModeID  ::= <Identifier>
 ```
 
-**Formal Semantics:** Specifies a named normative policy applying within SCOPE. If PREDICATE evaluates to TRUE, the rule fires and ENFORCEMENT_CONTEXT determines the response; examples are LogOnly, PreventAction, TriggerAlert, and PreventActionAndAudit. PRIORITY specifies precedence when multiple rules fire simultaneously; higher numeric values indicate higher precedence. When two rules share the same PRIORITY and both fire, evaluation is implementation-defined; conformant evaluators are expected to apply deterministic ordering by RuleID lexicographically. If PRIORITY is omitted, the default value is 0. Under the Strict Profile, PREDICATE must be a statically decidable Boolean expression.
+**Formal Semantics:** Specifies a named normative policy applying within SCOPE. If the rule's SCOPE does not match the proposed action, the rule contributes no verdict. If SCOPE matches and PREDICATE evaluates to FALSE, the rule contributes no verdict. If SCOPE matches and PREDICATE evaluates to TRUE, ENFORCEMENT_MODE names the enforcement response and must resolve at load time to exactly one mode class: permissive or prohibitive. The minimum conformant mode set is ALLOW_ACTION (permissive), LOG_ONLY (permissive), PREVENT_ACTION (prohibitive), and REQUIRE_HUMAN_APPROVAL (prohibitive unless approval is separately modeled as a declared observation or trust predicate). Unknown or unclassified modes are load-time errors. This field is an enforcement-mode identifier, not a CONTEXT_RULE reference. PRIORITY specifies precedence when multiple rules contribute verdicts; higher numeric values indicate higher precedence. Equal-priority conflicts resolve fail-closed by status order DENY > UNKNOWN > ALLOW. Equal-priority same-status ties use lexicographic RuleID only to choose the reported rule_id. If PRIORITY is omitted, the default value is 0. Under the Strict Profile, PREDICATE must be a statically decidable Boolean expression. Under the Extended Profile, Extended-only constructs in PREDICATE require CONSTRAINT_SET, and each listed bound must resolve to a RESOURCE_BOUND at load time.
 
 **Profile:** [BOTH]. PREDICATE complexity varies by profile.
 
@@ -524,20 +539,20 @@ ScopeID            ::= <Identifier>
 GOVERNANCE_RULE NoDataDeletionWithoutConsent :
     SCOPE UserManagement,
     PREDICATE ( AttemptToDeleteUserData(user_id) AND NOT ConsentIsGiven(user_id) ),
-    ENFORCEMENT_CONTEXT PreventAction,
+    ENFORCEMENT_MODE PREVENT_ACTION,
     PRIORITY 99;
 
 GOVERNANCE_RULE LogHighRiskOperation :
     SCOPE SystemSecurity,
     PREDICATE ( IsHighRisk(operation_type) ),
-    ENFORCEMENT_CONTEXT LogOnly;
+    ENFORCEMENT_MODE LOG_ONLY;
 ```
 
 ---
 
 ### A.6.9 SELF_REFERENCE_POINT [BOTH]
 
-**Purpose:** Defines a formal, addressable handle to an element within the system's own definition, for example its grammar rules, data schemas, or active rule sets, enabling introspection and controlled self-modification. TargetTypeID is extensible via META_DEFINITION_RULE.
+**Purpose:** Defines a formal, addressable handle to an element within the system's own definition, for example its data schemas or active rule sets, enabling introspection and controlled self-modification. TargetTypeID is a Constitutional category; valid target types come from the grammar's fixed target-type registry and are not extensible via META_DEFINITION_RULE.
 
 **Formal EBNF Syntax:**
 ```ebnf
@@ -546,19 +561,19 @@ PointID       ::= <Identifier>
 TargetTypeID  ::= <Identifier>
 ```
 
-**Formal Semantics:** Creates a named reference (PointID) to a part of the system's own meta-level. TARGET_TYPE specifies what kind of meta-level element is referenced; examples are GrammarRule, DataSchemaDefinition, and GovernanceRuleSet. ACCESS_PROTOCOL defines how to interact with this point; examples are ReadDefinition, ModifyDefinition, and QueryRuntimeState. SELF_REFERENCE_POINT is the target of MUTATION_RULE (see Section A.6.10).
+**Formal Semantics:** Creates a named reference (PointID) to a permitted part of the system's own meta-level. TARGET_TYPE specifies what kind of meta-level element is referenced; examples include DATA_SCHEMA_DEFINITION and GOVERNANCE_RULE_SET. Target types that address grammar primitives, parser/compiler elements, primitive declarations, Appendix D, or the Constitutional tier are reserved to the Constitutional registry and cannot be created by a loaded specification. ACCESS_PROTOCOL defines how to interact with this point; examples are READ_DEFINITION, MODIFY_DEFINITION, and QUERY_RUNTIME_STATE. SELF_REFERENCE_POINT is the target of MUTATION_RULE (see Section A.6.10).
 
 **Profile:** [BOTH]. The declaration is static; its use by MUTATION_RULE may vary by profile.
 
 **Concrete Example:**
 ```omega
 SELF_REFERENCE_POINT MainGrammarDefinition :
-    TARGET_TYPE GrammarRule,
-    ACCESS_PROTOCOL ReadDefinition;
+    TARGET_TYPE GOVERNANCE_RULE_SET,
+    ACCESS_PROTOCOL READ_DEFINITION;
 
 SELF_REFERENCE_POINT UserPreferenceSchemaRef :
-    TARGET_TYPE DataSchemaDefinition,
-    ACCESS_PROTOCOL ModifyDefinition;
+    TARGET_TYPE DATA_SCHEMA_DEFINITION,
+    ACCESS_PROTOCOL MODIFY_DEFINITION;
 ```
 
 ---
@@ -569,20 +584,24 @@ SELF_REFERENCE_POINT UserPreferenceSchemaRef :
 
 **Formal EBNF Syntax:**
 ```ebnf
-MutationRuleCall      ::= 'MUTATION_RULE' <RuleID> ':' 'TARGET_REFERENCE' <SelfReferencePointID> ',' 'CONDITION' <BooleanExpression> ',' 'TRANSFORM_ACTION' <ActionID> [ ',' 'APPROVAL_POLICY' <PolicyID> ]
+MutationRuleCall      ::= 'MUTATION_RULE' <RuleID> ':' 'TARGET_REFERENCE' <SelfReferencePointID> ',' 'CONDITION' <BooleanExpression> ',' 'TRANSFORM_ACTION' <ActionID> [ ',' 'APPROVAL_POLICY' <PolicyID> ] [ ',' 'CONSTRAINT_SET' <BoundIDList> ]
 SelfReferencePointID  ::= <Identifier>
 ```
 
-**Formal Semantics:** Specifies a named rule for self-modification. If CONDITION is TRUE, the TRANSFORM_ACTION (an ActionID referring to an inherent operation that performs the modification) is applied to the element referenced by TARGET_REFERENCE. APPROVAL_POLICY governs whether this mutation requires external consent or passes internal checks before execution; examples are AutomatedInternalApproval and RequireHumanAuthorization. Under the Strict Profile, CONDITION must be a statically decidable Boolean expression.
+**Formal Semantics:** Specifies a named rule for self-modification. If CONDITION is TRUE, the TRANSFORM_ACTION (an ActionID referring to a host-registered transform action) is applied to the element referenced by TARGET_REFERENCE. TARGET_REFERENCE must name a SELF_REFERENCE_POINT. APPROVAL_POLICY governs whether this mutation requires external consent or passes internal checks before execution; examples are AutomatedInternalApproval and RequireHumanAuthorization. The loader constructs a mutation authority graph whose nodes are mutable definitions addressable through SELF_REFERENCE_POINT. A direct edge exists from each MUTATION_RULE to its TARGET_REFERENCE. Derived authority edges include any mutation that can alter another mutation rule, approval policy, trust requirement, target reference, or governing rule. The loader rejects cycles that allow a mutation path to weaken its own approval policy, expand its own target set, bypass its governing authority, or alter Constitutional targets. Under the Strict Profile, CONDITION must be a statically decidable Boolean expression. Under the Extended Profile, Extended-only constructs in CONDITION or TRANSFORM_ACTION require CONSTRAINT_SET, and each listed bound must resolve to a RESOURCE_BOUND at load time.
 
 **Profile:** [BOTH]. CONDITION complexity varies by profile.
 
 **Concrete Example:**
 ```omega
+SELF_REFERENCE_POINT RESOURCE_BOUND_MAX_MEMORY_USAGE :
+    TARGET_TYPE RESOURCE_BOUND_DEFINITION,
+    ACCESS_PROTOCOL MODIFY_DEFINITION;
+
 MUTATION_RULE AdaptiveResourceThreshold :
-    TARGET_REFERENCE MaxMemoryUsage,
+    TARGET_REFERENCE RESOURCE_BOUND_MAX_MEMORY_USAGE,
     CONDITION ( LowSystemMemory(current_memory_usage) ),
-    TRANSFORM_ACTION AdjustThresholdByFactor,
+    TRANSFORM_ACTION ADJUST_THRESHOLD_BY_FACTOR,
     APPROVAL_POLICY AutomatedInternalApproval;
 ```
 
@@ -590,7 +609,7 @@ MUTATION_RULE AdaptiveResourceThreshold :
 
 ### A.6.11 PERCEPTION_MAP [BOTH]
 
-**Purpose:** Defines the transformation from raw environmental input received via an ENVIRONMENT_INTERFACE_POINT into structured internal concepts conforming to a DATA_TYPE_SCHEMA. It bridges the gap between raw sensor or network data and the system's internal knowledge representation. An optional uncertainty model handles probabilistic or noisy inputs.
+**Purpose:** Defines the typed binding from a declared ENVIRONMENT_INTERFACE_POINT or host-hydrated substrate observation into structured internal concepts conforming to a DATA_TYPE_SCHEMA. It bridges the host perception substrate and the Safety Kernel's typed governance state. An optional uncertainty model records probabilistic or noisy observation provenance.
 
 **Formal EBNF Syntax:**
 ```ebnf
@@ -598,38 +617,39 @@ PerceptionMapCall ::= 'PERCEPTION_MAP' <MapID> ':' 'INPUT_INTERFACE' <InterfaceI
 MapID             ::= <Identifier>
 ```
 
-**Formal Semantics:** Defines a named process for interpreting raw environmental data. It takes data arriving at INPUT_INTERFACE, applies a TRANSFORMATION_FUNCTION (an ActionID referring to an inherent operation such as a parsing routine, LLM inference call, or sensor interpretation algorithm), and maps the result to the structure defined by OUTPUT_SCHEMA. An UNCERTAINTY_MODEL may be specified to handle probabilistic or noisy data streams.
+**Formal Semantics:** Defines a named typed observation binding. It takes a declared observation available through INPUT_INTERFACE, applies TRANSFORMATION_FUNCTION as a registered host/substrate binding, and maps the resulting typed value to OUTPUT_SCHEMA. Omega does not parse raw streams, run LLM inference, or interpret sensor noise inside the Safety Kernel. An UNCERTAINTY_MODEL may be specified to describe probabilistic or noisy observation provenance.
 
 **Profile:** [BOTH]. TRANSFORMATION_FUNCTION is a named ActionID; complexity of the underlying action does not affect this primitive's classification.
 
 **Concrete Example:**
 ```omega
-PERCEPTION_MAP ParseRawSensorData :
+PERCEPTION_MAP HydrateSensorObservation :
     INPUT_INTERFACE TemperatureSensorInput,
     OUTPUT_SCHEMA TemperatureDataSchema,
-    TRANSFORMATION_FUNCTION ParseCSVDataStream,
+    TRANSFORMATION_FUNCTION HydrateTemperatureObservation,
     UNCERTAINTY_MODEL SensorErrorModel;
 
-PERCEPTION_MAP InterpretLLMResponse :
+PERCEPTION_MAP BindLLMResponseObservation :
     INPUT_INTERFACE LLMResponseAPI,
     OUTPUT_SCHEMA StructuredThoughtSchema,
-    TRANSFORMATION_FUNCTION ExtractTaggedContent;
+    TRANSFORMATION_FUNCTION HydrateStructuredThought;
 ```
 
 ---
 
 ### A.6.12 LEARNING_AXIOM [BOTH]
 
-**Purpose:** Defines the formal contract for a learning process: what it consumes as input, what it produces as output, the metric it optimizes, the resource bounds it must respect, and the rule by which it integrates learned knowledge into the system. KnowledgeUpdateRule must reference a STATE_TRANSITION or MUTATION_RULE.
+**Purpose:** Defines the formal contract for a learning process: what it consumes as input, what it produces as output, the metric it optimizes, the resource bounds it must respect, and the rule by which it integrates learned knowledge into the system. KnowledgeUpdateRule must reference a MUTATION_RULE in the same module.
 
 **Formal EBNF Syntax:**
 ```ebnf
-LearningAxiomCall ::= 'LEARNING_AXIOM' <AxiomID> ':' 'INPUT_SCHEMA' <SchemaID> ',' 'OUTPUT_SCHEMA' <SchemaID> ',' 'OBJECTIVE_METRIC' <MetricID> ',' 'CONSTRAINT_SET' '{' <ResourceBoundID> { ',' <ResourceBoundID> } '}' ',' 'KNOWLEDGE_UPDATE_RULE' <RuleID> [ ',' 'ROLLBACK_CONDITION' <BooleanExpression> ]
+LearningAxiomCall ::= 'LEARNING_AXIOM' <AxiomID> ':' 'INPUT_SCHEMA' <SchemaID> ',' 'OUTPUT_SCHEMA' <SchemaID> ',' 'OBJECTIVE_METRIC' <MetricID> ',' 'CONSTRAINT_SET' <BoundIDList> ',' 'KNOWLEDGE_UPDATE_RULE' <MutationRuleID> [ ',' 'ROLLBACK_CONDITION' <BooleanExpression> ]
 AxiomID           ::= <Identifier>
 ResourceBoundID   ::= <Identifier>
+MutationRuleID    ::= <RuleID>
 ```
 
-**Formal Semantics:** Defines a named learning process. Input data must conform to INPUT_SCHEMA. Output data must conform to OUTPUT_SCHEMA. The learning process optimizes for OBJECTIVE_METRIC. It operates within CONSTRAINT_SET, which is a set of references to previously declared RESOURCE_BOUND instances. Knowledge integration is performed via KNOWLEDGE_UPDATE_RULE, which must be the ID of a STATE_TRANSITION or MUTATION_RULE rule already declared in the same specification. ROLLBACK_CONDITION, if specified, is a Boolean expression that, when evaluated to TRUE after a learning step, triggers reversion of the most recent KNOWLEDGE_UPDATE_RULE application; the reversion mechanism is the REVERSION_PROTOCOL of the named STATE_TRANSITION (when KNOWLEDGE_UPDATE_RULE references one), or rejection of the proposed mutation (when KNOWLEDGE_UPDATE_RULE references a MUTATION_RULE).
+**Formal Semantics:** Defines a named learning process. Input data must conform to INPUT_SCHEMA. Output data must conform to OUTPUT_SCHEMA. The learning process optimizes for OBJECTIVE_METRIC. It operates within CONSTRAINT_SET, which is a set of references to previously declared RESOURCE_BOUND instances. Knowledge integration is performed via KNOWLEDGE_UPDATE_RULE, which must be the ID of a MUTATION_RULE already declared in the same module. Learning-driven updates therefore pass through the mutation authority machinery. ROLLBACK_CONDITION, if specified, is a Boolean expression that, when evaluated to TRUE after a learning step, rejects or reverts the proposed mutation according to the referenced MUTATION_RULE's approval and remediation path.
 
 **Profile:** [BOTH]. The primitive declaration is static. The KNOWLEDGE_UPDATE_RULE referenced may itself be Strict or Extended depending on its own declaration.
 
@@ -647,7 +667,7 @@ LEARNING_AXIOM AdaptUserTonePreference :
 
 ### A.6.13 META_DEFINITION_RULE [BOTH]
 
-**Purpose:** Enables the formal extension of Omega-Code's own meta-level vocabulary, for example defining new ModalityTypes, ResourceTypeIDs, InteractionTypeIDs, or any other extensible category used by the 13 primitives. This is the mechanism by which the language remains future-proof without requiring changes to the core parser.
+**Purpose:** Enables the formal extension of sanctioned Omega-Code vocabulary categories, for example defining new ModalityTypes, ResourceTypeIDs, InteractionTypeIDs, MetricIDs, or PropertyIDs. This is the mechanism by which the language remains future-proof without requiring changes to the core parser. It cannot extend TargetTypeID or any category that addresses grammar primitives, parser/compiler elements, primitive declarations, Appendix D, or the Constitutional tier.
 
 **Formal EBNF Syntax:**
 ```ebnf
@@ -656,14 +676,14 @@ MetaDefinitionRuleCall ::= 'META_DEFINITION_RULE' <RuleID> ':' 'TARGET_TYPE' <Ta
 
 Note: Earlier versions of the Reference Manual contained a typo in Section 8 listing this field as `<DataSchemaID>`. The correct type is `<SchemaDefinition>`.
 
-**Formal Semantics:** Specifies a named rule for extending Omega-Code's built-in type system or conceptual ontology. TARGET_TYPE names the category being extended, for example SensorTypeID, NewCommunicationPattern, or CustomModalityType. DEFINITION_SCHEMA provides the inline structural definition (using SchemaDefinition notation) that any new instance of this type must conform to. VALIDATION_PROTOCOL ensures that new definitions meet required standards; examples are SchemaValidation and FormalLogicCheck.
+**Formal Semantics:** Specifies a named rule for extending a sanctioned vocabulary category or conceptual ontology. TARGET_TYPE names the extensible category being enlarged, for example RESOURCE_TYPE_ID, MODALITY_TYPE, INTERACTION_TYPE_ID, METRIC_ID, or PROPERTY_ID. TARGET_TYPE must not name TARGET_TYPE_ID or any Constitutional target category. DEFINITION_SCHEMA provides the inline structural definition (using SchemaDefinition notation) that any new instance of this type must conform to. VALIDATION_PROTOCOL ensures that new definitions meet required standards; examples are SchemaValidation and FormalLogicCheck.
 
 **Profile:** [BOTH]. META_DEFINITION_RULE is a static declaration.
 
 **Concrete Example:**
 ```omega
-META_DEFINITION_RULE DefineNewSensorType :
-    TARGET_TYPE SensorTypeID,
+META_DEFINITION_RULE DefineNewResourceType :
+    TARGET_TYPE RESOURCE_TYPE_ID,
     DEFINITION_SCHEMA (
         VAR name : STRING;
         VAR measurementUnit : STRING;
@@ -678,7 +698,7 @@ META_DEFINITION_RULE DefineNewSensorType :
 
 Primitives are designed to be composed to model complex behaviors. The following patterns are the most commonly employed in this volume. Patterns A.7.2, A.7.4, and A.7.5 derive from Reference Manual Section 10. Patterns A.7.1 and A.7.3 are formalized in this appendix from the operational semantics of their constituent primitives; they have no antecedent in the Reference Manual or Tech-Spec but are entailed by the primitive definitions in those sources.
 
-A note on named compositions and the size of the primitive set. Several primitives in the canonical thirteen are themselves expressible as compositions of others. MUTATION_RULE, in particular, can be reconstructed as a composition of SELF_REFERENCE_POINT (its TARGET_REFERENCE), GOVERNANCE_RULE (its CONDITION and APPROVAL_POLICY), and STATE_TRANSITION (its TRANSFORM_ACTION). The fact that MUTATION_RULE remains in the canonical set is a deliberate design choice. Self-modification is so common, structurally rich, and conceptually cohesive that giving it a dedicated name produces clearer specifications and tighter semantic boundaries than forcing every author to compose the same three primitives by hand. The same principle is observable in every mature specification language: SQL provides JOIN even though it is expressible as cross product plus filter; HTML provides STRONG even though BOLD would suffice; Cedar provides FORBID and PERMIT as duals when one would do. Named compositions earn their place in the canonical set by frequency of use, structural cohesion, and the readability gain they produce. The thirteen-primitive count is the gauntlet's residue at a level that balances irreducibility with ergonomics. A reader who would prefer a strictly minimal set could compile the thirteen down to a smaller core; the canonical thirteen is what produces the most readable specifications.
+A note on named compositions and the size of the primitive set. Some operational patterns can be analyzed as compositions, but the thirteen primitives remain canonical syntax because removing any primitive leaves a named failure class without a first-class addressable form. MUTATION_RULE, in particular, is retained because self-modification must be targetable, auditable, and load-time checked as its own construct rather than reconstructed informally at each use site. Implementation desugaring does not make a primitive eliminable from the normative grammar.
 
 ### A.7.1 STATE_TRANSITION x TRUST_ELEMENT: Verified State Change
 
@@ -694,12 +714,19 @@ TRUST_ELEMENT AgentAuthorizedForStateChange :
     OBJECT TargetSystem,
     PROOF_PROTOCOL DigitalSignature;
 
+GOVERNANCE_RULE AllowTargetActivation :
+    SCOPE ActivateTargetSystem,
+    PREDICATE ( TrustHolds(AgentAuthorizedForStateChange) AND SystemIsIdle(TargetSystem) ),
+    ENFORCEMENT_MODE ALLOW_ACTION,
+    PRIORITY 10;
+
 STATE_TRANSITION ActivateTargetSystem :
     SUBJECT TargetSystem,
     PRECONDITION ( TrustHolds(AgentAuthorizedForStateChange) AND SystemIsIdle(TargetSystem) ),
     POSTCONDITION ( SystemIsActive(TargetSystem) ),
     ACTION SendActivateCommand,
-    REVERSION_PROTOCOL DeactivationRollback;
+    REVERSION_PROTOCOL DeactivationRollback,
+    GOVERNED_BY AllowTargetActivation;
 ```
 
 ### A.7.2 GOVERNANCE_RULE x MUTATION_RULE: Rule-of-Rule-Changes
@@ -714,26 +741,26 @@ This composition ensures that changes to the specification itself are governed. 
 GOVERNANCE_RULE MutationRequiresApproval :
     SCOPE SelfModificationScope,
     PREDICATE ( IsMutationRequest(operation_type) ),
-    ENFORCEMENT_CONTEXT RequireHumanApproval,
+    ENFORCEMENT_MODE REQUIRE_HUMAN_APPROVAL,
     PRIORITY 100;
 
 SELF_REFERENCE_POINT ResourceThresholdRef :
-    TARGET_TYPE ResourceBoundDefinition,
-    ACCESS_PROTOCOL ModifyDefinition;
+    TARGET_TYPE RESOURCE_BOUND_DEFINITION,
+    ACCESS_PROTOCOL MODIFY_DEFINITION;
 
 MUTATION_RULE GovernedThresholdAdjustment :
     TARGET_REFERENCE ResourceThresholdRef,
     CONDITION ( PerformanceMetricExceedsBaseline(current_metric) ),
-    TRANSFORM_ACTION AdjustThresholdByFactor,
+    TRANSFORM_ACTION ADJUST_THRESHOLD_BY_FACTOR,
     APPROVAL_POLICY MutationRequiresApproval;
 ```
 
 ### A.7.3 PERCEPTION_MAP x GOVERNANCE_RULE: Observation-to-Policy Binding
 
-This composition binds raw environmental observation to a normative response. It is the standard pattern for reactive governance.
+This composition binds a hydrated environmental observation to a normative response. It is the standard pattern for reactive governance.
 
-1. `ENVIRONMENT_INTERFACE_POINT`: Declares the raw input channel.
-2. `PERCEPTION_MAP`: Transforms raw data into a structured internal concept.
+1. `ENVIRONMENT_INTERFACE_POINT`: Declares the external observation boundary.
+2. `PERCEPTION_MAP`: Binds host-hydrated data into a structured internal concept.
 3. `GOVERNANCE_RULE`: Uses the structured concept's properties as the PREDICATE, triggering an enforcement response.
 
 ```omega
@@ -751,14 +778,14 @@ PERCEPTION_MAP ParseAuditEvent :
 GOVERNANCE_RULE BlockHighSeverityEvent :
     SCOPE SecurityManagement,
     PREDICATE ( IsHighSeverity(parsed_event) ),
-    ENFORCEMENT_CONTEXT PreventAction,
+    ENFORCEMENT_MODE PREVENT_ACTION,
     PRIORITY 95;
 ```
 
 ### A.7.4 Sensor-to-Action Feedback Loop
 
-1. `ENVIRONMENT_INTERFACE_POINT`: Defines a raw sensor input channel.
-2. `PERCEPTION_MAP`: Translates raw data from the interface into a structured internal concept.
+1. `ENVIRONMENT_INTERFACE_POINT`: Defines an external sensor observation boundary.
+2. `PERCEPTION_MAP`: Binds host-hydrated data from the interface into a structured internal concept.
 3. `STATE_TRANSITION`: Uses the structured concept as a PRECONDITION to trigger a resulting ACTION.
 
 ### A.7.5 Verifiable Learning Contract
@@ -766,6 +793,79 @@ GOVERNANCE_RULE BlockHighSeverityEvent :
 1. `RESOURCE_BOUND`: Constrains the CPU time and memory a learning process may consume.
 2. `MUTATION_RULE`: Defines how the system's knowledge base is updated based on what is learned.
 3. `LEARNING_AXIOM`: Composes the above by declaring the learning task's objective while operating within the CONSTRAINT_SET and using the specified KNOWLEDGE_UPDATE_RULE.
+
+### A.7.6 Minimal Strict End-to-End Composition
+
+The following compact example exercises the Can/May/Do path and the mutation-learning path in one Strict-profile specification. It is intended as a grammar-composition specimen, not as a domain recommendation. Host registries supply the listed predicate functions and host actions; the Omega source binds them structurally.
+
+```omega
+PROFILE Strict;
+
+MODULE MinimalGovernancePath
+
+DATA_TYPE_SCHEMA StructuredAuditEventSchema :
+    DEFINITION (
+        VAR severity : STRING;
+        VAR subject_id : STRING;
+    )
+    SEMANTIC_PROPERTIES { SecurityEvent };
+
+DATA_TYPE_SCHEMA PolicyUpdateSchema :
+    DEFINITION (
+        VAR threshold_delta : INTEGER;
+    );
+
+ENVIRONMENT_INTERFACE_POINT AuditEventInput :
+    SUBJECT SecurityMonitor,
+    EXTERNAL_REFERENT AuditSubsystem,
+    INTERACTION_TYPE RECEIVE_MESSAGE,
+    DATA_SCHEMA StructuredAuditEventSchema;
+
+PERCEPTION_MAP BindAuditEvent :
+    INPUT_INTERFACE AuditEventInput,
+    OUTPUT_SCHEMA StructuredAuditEventSchema,
+    TRANSFORMATION_FUNCTION HYDRATE_AUDIT_EVENT;
+
+GOVERNANCE_RULE AllowQuarantineForHighSeverity :
+    SCOPE ApplyQuarantine,
+    PREDICATE ( IsHighSeverity(structured_event) ),
+    ENFORCEMENT_MODE ALLOW_ACTION,
+    PRIORITY 50;
+
+STATE_TRANSITION QuarantineSubject :
+    SUBJECT MonitoredAgent,
+    PRECONDITION ( IsHighSeverity(structured_event) ),
+    POSTCONDITION ( IsQuarantined(MonitoredAgent) ),
+    ACTION ApplyQuarantine,
+    GOVERNED_BY AllowQuarantineForHighSeverity;
+
+RESOURCE_BOUND MaxPolicyUpdateEvaluations :
+    SUBJECT SecurityMonitor,
+    TYPE EVALUATION_STEPS,
+    METRIC STEP_COUNT,
+    THRESHOLD 1000,
+    VIOLATION_POLICY HALT_EVALUATION;
+
+SELF_REFERENCE_POINT AlertThresholdRef :
+    TARGET_TYPE RESOURCE_BOUND_DEFINITION,
+    ACCESS_PROTOCOL MODIFY_DEFINITION;
+
+MUTATION_RULE AdjustAlertThreshold :
+    TARGET_REFERENCE AlertThresholdRef,
+    CONDITION ( FalsePositiveRateExceedsLimit(SecurityMonitor) ),
+    TRANSFORM_ACTION ADJUST_THRESHOLD_BY_FACTOR,
+    APPROVAL_POLICY REQUIRE_HUMAN_AUTHORIZATION,
+    CONSTRAINT_SET { MaxPolicyUpdateEvaluations };
+
+LEARNING_AXIOM TuneAlertThreshold :
+    INPUT_SCHEMA StructuredAuditEventSchema,
+    OUTPUT_SCHEMA PolicyUpdateSchema,
+    OBJECTIVE_METRIC FALSE_POSITIVE_RATE,
+    CONSTRAINT_SET { MaxPolicyUpdateEvaluations },
+    KNOWLEDGE_UPDATE_RULE AdjustAlertThreshold;
+
+END MODULE;
+```
 
 ---
 
@@ -780,7 +880,7 @@ BOOLEAN                 BREAK                   CONDITION               CONSTRAI
 CONTEXT_RULE            CONTINUE                DATA_SCHEMA             DATA_TYPE_SCHEMA
 DECLARE                 DEFINITION              DEFINITION_SCHEMA       ELSE
 END FUNCTION            END IF                  END LOOP                END MODULE
-ENFORCEMENT_CONTEXT     ENVIRONMENT_INTERFACE_POINT  EXTERNAL_REFERENT  FALSE
+ENFORCEMENT_MODE        ENVIRONMENT_INTERFACE_POINT  EXTERNAL_REFERENT  FALSE
 FIELD                   FLOAT                   FOR                     FUNCTION
 GOVERNANCE_RULE         GOVERNED_BY             IF                      IN
 INCOHERENCE_TOLERANCE   INPUT_INTERFACE         INPUT_SCHEMA            INTEGER
@@ -811,12 +911,12 @@ VAR                     VIOLATION_POLICY        VOID                    WHILE
 | `RESOURCE_BOUND` | Declares a limit on a resource. | `Subject`, `Type`, `Metric`, `Threshold` | SS5.1.3 |
 | `ENVIRONMENT_INTERFACE_POINT` | Defines a system-environment boundary. | `Subject`, `ExternalReferent`, `InteractionType` | SS5.1.4 |
 | `DATA_TYPE_SCHEMA` | Defines a custom structured data type. | `Definition`, `SemanticProperties` | SS5.2.1 |
-| `STATE_TRANSITION` | Defines an atomic state change. | `Subject`, `Precondition`, `Postcondition`, `Action` | SS5.2.2 |
+| `STATE_TRANSITION` | Defines host-action authorization and postcondition verification. | `Subject`, `Precondition`, `Postcondition`, `Action`, `GovernedBy` | SS5.2.2 |
 | `TRUST_ELEMENT` | Makes a verifiable claim about an entity. | `Subject`, `Predicate`, `Object`, `ProofProtocol` | SS5.2.3 |
-| `GOVERNANCE_RULE` | Defines a normative policy. | `Scope`, `Predicate`, `EnforcementContext` | SS5.3.1 |
+| `GOVERNANCE_RULE` | Defines a normative policy. | `Scope`, `Predicate`, `EnforcementMode` | SS5.3.1 |
 | `SELF_REFERENCE_POINT` | Creates a handle to the system's own definition. | `TargetType`, `AccessProtocol` | SS5.3.2 |
 | `MUTATION_RULE` | Defines a rule for self-modification. | `TargetReference`, `Condition`, `TransformAction` | SS5.3.3 |
-| `PERCEPTION_MAP` | Maps raw input to internal concepts. | `InputInterface`, `OutputSchema`, `TransformationFunction` | SS5.3.4 |
+| `PERCEPTION_MAP` | Binds hydrated observations to internal concepts. | `InputInterface`, `OutputSchema`, `TransformationFunction` | SS5.3.4 |
 | `LEARNING_AXIOM` | Defines a formal contract for a learning process. | `InputSchema`, `ObjectiveMetric`, `KnowledgeUpdateRule` | SS5.3.5 |
 | `META_DEFINITION_RULE` | Defines how to extend the language's own concepts. | `TargetType`, `DefinitionSchema`, `ValidationProtocol` | SS5.3.6 |
 
@@ -832,11 +932,11 @@ The grammar below is the authoritative, complete EBNF for Omega-Code. It reprodu
 (* Top-level Structure *)
 OmegaCode ::= [ ProfileDeclaration ] { ModuleDefinition | Statement | Comment }
 
-(* Profile Declaration: optional, module-level. See A.2.3. *)
+(* Profile Declaration: optional, compilation-unit level. See A.2.3. *)
 ProfileDeclaration ::= 'PROFILE' ( 'Strict' | 'Extended' ) ';'
 
 (* Module Definition *)
-ModuleDefinition ::= 'MODULE' <ModuleName> <Block> 'END MODULE'
+ModuleDefinition ::= 'MODULE' <ModuleName> <Block> 'END MODULE' [ ';' ]
 ModuleName ::= <Identifier>
 
 (* Block Structure: A sequence of statements or comments *)
@@ -863,12 +963,12 @@ Assignment ::= <VariableName> 'ASSIGN' <Expression>
 ReturnStatement ::= 'RETURN' [ <Expression> ]
 
 (* Control Flow *)
-IfStatement ::= 'IF' <BooleanExpression> 'THEN' <Block> [ 'ELSE' <Block> ] 'END IF'
-LoopStatement ::= 'LOOP' ( 'WHILE' <BooleanExpression> | 'FOR' <VariableName> 'IN' <Range> ) <Block> 'END LOOP'
+IfStatement ::= 'IF' <BooleanExpression> 'THEN' <Block> [ 'ELSE' <Block> ] 'END IF' [ ';' ]
+LoopStatement ::= 'LOOP' ( 'WHILE' <BooleanExpression> | 'FOR' <VariableName> 'IN' <Range> ) <Block> 'END LOOP' [ ';' ]
 Range ::= <Expression> 'TO' <Expression> | <Identifier> (* e.g., '1 TO 10', 'list_of_items' *)
 
 (* Function Definition *)
-FunctionDefinition ::= 'FUNCTION' <FunctionName> '(' [ <ParameterList> ] ')' [ 'RETURNS' <ReturnType> ] <Block> 'END FUNCTION'
+FunctionDefinition ::= 'FUNCTION' <FunctionName> '(' [ <ParameterList> ] ')' [ 'RETURNS' <ReturnType> ] <Block> 'END FUNCTION' [ ';' ]
 FunctionName ::= <Identifier>
 ParameterList ::= <Parameter> { ',' <Parameter> }
 Parameter ::= <ParameterName> ':' <DataType>
@@ -902,13 +1002,20 @@ ArgumentList ::= <Expression> { ',' <Expression> }
 
 ActionCall ::= <ActionID> '(' [ <ArgumentList> ] ')' (* For inherent operations like LOG, INCREMENT *)
 
-(* Boolean Expressions (for Conditions and Predicates) *)
-BooleanExpression ::= <Expression> ( '==' | '!=' | '<' | '>' | '<=' | '>=' ) <Expression>
-                    | 'NOT' <BooleanExpression>
-                    | <BooleanExpression> 'AND' <BooleanExpression>
-                    | <BooleanExpression> 'OR' <BooleanExpression>
-                    | '(' <BooleanExpression> ')'
-                    | <FunctionCall> (* if function returns BOOLEAN *)
+(* Boolean Expressions (for Conditions and Predicates). Precedence: NOT > AND > OR. *)
+BooleanExpression ::= <OrExpression>
+OrExpression ::= <AndExpression> { 'OR' <AndExpression> }
+AndExpression ::= <NotExpression> { 'AND' <NotExpression> }
+NotExpression ::= [ 'NOT' ] <PrimaryBoolean>
+PrimaryBoolean ::= 'TRUE'
+                 | 'FALSE'
+                 | '(' <BooleanExpression> ')'
+                 | <ComparisonExpression>
+                 | <MembershipExpression>
+                 | <FunctionCall> (* only if registered as returning BOOLEAN in this slot *)
+ComparisonExpression ::= <Expression> ( '==' | '!=' | '<' | '>' | '<=' | '>=' ) <Expression>
+MembershipExpression ::= <Expression> 'IN' <SetExpression>
+SetExpression ::= '{' <Expression> { ',' <Expression> } '}'
 
 (* Numeric Expressions (for Quantities and Priorities) *)
 NumericExpression ::= <IntegerLiteral> | <FloatLiteral>
@@ -944,7 +1051,9 @@ SchemaID ::= <Identifier>
 ActionID ::= <Identifier> (* Named inherent language operation *)
 ProtocolID ::= <Identifier>
 RuleID ::= <Identifier>
+MutationRuleID ::= <RuleID>
 ScopeID ::= <Identifier>
+EnforcementModeID ::= <Identifier>
 Value ::= <NumericExpression> (* for Priority and other simple values where numeric is expected *)
 PointID ::= <Identifier>
 TargetTypeID ::= <Identifier>
@@ -959,6 +1068,7 @@ AxiomID ::= <Identifier>
 RelationID ::= <Identifier>
 ResourceBoundID ::= <Identifier>
 ChainID ::= <Identifier>
+BoundIDList ::= '{' <ResourceBoundID> { ',' <ResourceBoundID> } '}'
 
 (* Revised Schema Definition: defines fields within a data type schema *)
 SchemaDefinition ::= '(' { FieldDefinition } ')'
@@ -994,19 +1104,19 @@ EnvironmentInterfacePointCall ::= 'ENVIRONMENT_INTERFACE_POINT' <InterfaceID> ':
 
 DataTypeSchemaCall ::= 'DATA_TYPE_SCHEMA' <SchemaID> ':' 'DEFINITION' <SchemaDefinition> [ 'SEMANTIC_PROPERTIES' '{' <PropertyID> { ',' <PropertyID> } '}' ]
 
-StateTransitionCall ::= 'STATE_TRANSITION' <TransitionID> ':' 'SUBJECT' <EntityID> ',' 'PRECONDITION' <BooleanExpression> ',' 'POSTCONDITION' <BooleanExpression> ',' 'ACTION' <ActionID> [ ',' 'REVERSION_PROTOCOL' <ProtocolID> ] [ ',' 'AUTHORIZED_BY' <ElementID> ] [ ',' 'GOVERNED_BY' <RuleID> ]
+StateTransitionCall ::= 'STATE_TRANSITION' <TransitionID> ':' 'SUBJECT' <EntityID> ',' 'PRECONDITION' <BooleanExpression> ',' 'POSTCONDITION' <BooleanExpression> ',' 'ACTION' <ActionID> [ ',' 'REVERSION_PROTOCOL' <ProtocolID> ] [ ',' 'AUTHORIZED_BY' <ElementID> ] ',' 'GOVERNED_BY' <RuleID> [ ',' 'CONSTRAINT_SET' <BoundIDList> ]
 
 TrustElementCall ::= 'TRUST_ELEMENT' <ElementID> ':' 'SUBJECT' <EntityID> ',' 'PREDICATE' <BooleanExpression> ',' 'OBJECT' <EntityID> [ ',' 'PROOF_PROTOCOL' <ProtocolID> ] [ ',' 'REVOCATION_PROTOCOL' <ProtocolID> ] [ ',' 'ACCOUNTABILITY_CHAIN' <ChainID> ]
 
-GovernanceRuleCall ::= 'GOVERNANCE_RULE' <RuleID> ':' 'SCOPE' <ScopeID> ',' 'PREDICATE' <BooleanExpression> ',' 'ENFORCEMENT_CONTEXT' <ContextID> [ ',' 'PRIORITY' <NumericExpression> ]
+GovernanceRuleCall ::= 'GOVERNANCE_RULE' <RuleID> ':' 'SCOPE' <ScopeID> ',' 'PREDICATE' <BooleanExpression> ',' 'ENFORCEMENT_MODE' <EnforcementModeID> [ ',' 'PRIORITY' <NumericExpression> ] [ ',' 'CONSTRAINT_SET' <BoundIDList> ]
 
 SelfReferencePointCall ::= 'SELF_REFERENCE_POINT' <PointID> ':' 'TARGET_TYPE' <TargetTypeID> ',' 'ACCESS_PROTOCOL' <ProtocolID>
 
-MutationRuleCall ::= 'MUTATION_RULE' <RuleID> ':' 'TARGET_REFERENCE' <SelfReferencePointID> ',' 'CONDITION' <BooleanExpression> ',' 'TRANSFORM_ACTION' <ActionID> [ ',' 'APPROVAL_POLICY' <PolicyID> ]
+MutationRuleCall ::= 'MUTATION_RULE' <RuleID> ':' 'TARGET_REFERENCE' <SelfReferencePointID> ',' 'CONDITION' <BooleanExpression> ',' 'TRANSFORM_ACTION' <ActionID> [ ',' 'APPROVAL_POLICY' <PolicyID> ] [ ',' 'CONSTRAINT_SET' <BoundIDList> ]
 
 PerceptionMapCall ::= 'PERCEPTION_MAP' <MapID> ':' 'INPUT_INTERFACE' <InterfaceID> ',' 'OUTPUT_SCHEMA' <SchemaID> ',' 'TRANSFORMATION_FUNCTION' <ActionID> [ ',' 'UNCERTAINTY_MODEL' <ModelID> ]
 
-LearningAxiomCall ::= 'LEARNING_AXIOM' <AxiomID> ':' 'INPUT_SCHEMA' <SchemaID> ',' 'OUTPUT_SCHEMA' <SchemaID> ',' 'OBJECTIVE_METRIC' <MetricID> ',' 'CONSTRAINT_SET' '{' <ResourceBoundID> { ',' <ResourceBoundID> } '}' ',' 'KNOWLEDGE_UPDATE_RULE' <RuleID> [ ',' 'ROLLBACK_CONDITION' <BooleanExpression> ]
+LearningAxiomCall ::= 'LEARNING_AXIOM' <AxiomID> ':' 'INPUT_SCHEMA' <SchemaID> ',' 'OUTPUT_SCHEMA' <SchemaID> ',' 'OBJECTIVE_METRIC' <MetricID> ',' 'CONSTRAINT_SET' <BoundIDList> ',' 'KNOWLEDGE_UPDATE_RULE' <MutationRuleID> [ ',' 'ROLLBACK_CONDITION' <BooleanExpression> ]
 
 MetaDefinitionRuleCall ::= 'META_DEFINITION_RULE' <RuleID> ':' 'TARGET_TYPE' <TargetTypeID> ',' 'DEFINITION_SCHEMA' <SchemaDefinition> ',' 'VALIDATION_PROTOCOL' <ProtocolID>
 ```
@@ -1019,9 +1129,9 @@ MetaDefinitionRuleCall ::= 'META_DEFINITION_RULE' <RuleID> ':' 'TARGET_TYPE' <Ta
 
 ## A.11 Extensibility via META_DEFINITION_RULE
 
-The META_DEFINITION_RULE primitive is the mechanism by which Omega-Code remains future-proof. Rather than hardcoding all possible values for extensible categories such as ResourceTypeID, ModalityType, InteractionTypeID, or TargetTypeID, the language provides a formal mechanism for creating new ones. This allows the language to adapt to unforeseen requirements without altering the core grammar or parser.
+The META_DEFINITION_RULE primitive is the mechanism by which Omega-Code remains future-proof. Rather than hardcoding all possible values for sanctioned extensible categories such as ResourceTypeID, ModalityType, InteractionTypeID, MetricID, or PropertyID, the language provides a formal mechanism for creating new ones. TargetTypeID and the formal self-reference target categories are Constitutional and are not extensible by META_DEFINITION_RULE. This allows the language to adapt to unforeseen requirements without altering the core grammar or parser.
 
-**Function:** META_DEFINITION_RULE defines a rule for creating new instances of a TARGET_TYPE. The DEFINITION_SCHEMA specifies the structure (as an inline SchemaDefinition) that a new definition must conform to. The VALIDATION_PROTOCOL ensures that any new definition is well-formed and compliant before it is accepted by the processing system.
+**Function:** META_DEFINITION_RULE defines a rule for creating new instances of a sanctioned extensible TARGET_TYPE category. The DEFINITION_SCHEMA specifies the structure (as an inline SchemaDefinition) that a new definition must conform to. The VALIDATION_PROTOCOL ensures that any new definition is well-formed and compliant before it is accepted by the processing system. A META_DEFINITION_RULE whose TARGET_TYPE is TARGET_TYPE_ID or another Constitutional category is rejected at load time.
 
 **Usage pattern:** Declare a META_DEFINITION_RULE once per new type category. Subsequently, use the new type identifier wherever the corresponding extensible category appears in a primitive call. The processing system validates new instances against the DEFINITION_SCHEMA at specification-load time.
 
@@ -1029,11 +1139,11 @@ The META_DEFINITION_RULE primitive is the mechanism by which Omega-Code remains 
 MetaDefinitionRuleCall ::= 'META_DEFINITION_RULE' <RuleID> ':' 'TARGET_TYPE' <TargetTypeID> ',' 'DEFINITION_SCHEMA' <SchemaDefinition> ',' 'VALIDATION_PROTOCOL' <ProtocolID>
 ```
 
-Example: defining a new sensor type category and then using it.
+Example: defining a new resource type category and then using it.
 
 ```omega
-META_DEFINITION_RULE DefineNewSensorType :
-    TARGET_TYPE SensorTypeID,
+META_DEFINITION_RULE DefineNewResourceType :
+    TARGET_TYPE RESOURCE_TYPE_ID,
     DEFINITION_SCHEMA (
         VAR name : STRING;
         VAR measurementUnit : STRING;
@@ -1041,8 +1151,13 @@ META_DEFINITION_RULE DefineNewSensorType :
     ),
     VALIDATION_PROTOCOL SchemaValidation;
 
--- Once defined, SensorTypeID is available as a valid type for variable declarations:
-VAR my_optical_sensor : SensorTypeID AS OpticalSensor;
+-- Once validated, the new resource type identifier may be used where ResourceTypeID is admitted:
+RESOURCE_BOUND MaxGpuSeconds :
+    SUBJECT InferenceWorker,
+    TYPE GpuSecond,
+    METRIC Seconds,
+    THRESHOLD 30,
+    VIOLATION_POLICY HaltEvaluation;
 ```
 
 ---
@@ -1070,7 +1185,6 @@ TEMPORAL_RELATION FullRelationExample:
     TYPE OVERLAPS,
     INTERVAL_A Interval_One,
     INTERVAL_B Interval_Two;
-;
 ```
 
 **Snippet 3: Nested Control Flow**
@@ -1103,7 +1217,6 @@ RESOURCE_BOUND BadOrder:
     TYPE Memory,
     METRIC Megabytes,
     VIOLATION_POLICY Halt;
-;
 ```
 *Reason for Invalidity:* The `ResourceBoundCall` rule specifies a strict order for its parameters (`SUBJECT`, `TYPE`, `METRIC`, `THRESHOLD`, `VIOLATION_POLICY`).
 
@@ -1121,9 +1234,19 @@ VAR MODULE: STRING AS "MyData"; --<-- 'MODULE' is a reserved keyword.
 ```
 *Reason for Invalidity:* `MODULE` is a reserved keyword and cannot be used as a `<VariableName>` identifier.
 
+**Snippet 5: STATE_TRANSITION Missing GOVERNED_BY**
+```omega
+STATE_TRANSITION UnsafeTransition :
+    SUBJECT TargetSystem,
+    PRECONDITION TRUE,
+    POSTCONDITION TRUE,
+    ACTION SendActivateCommand;
+```
+*Reason for Invalidity:* `StateTransitionCall` requires `GOVERNED_BY <RuleID>`. A transition without a governing rule is malformed.
+
 ---
 
-## A.12 Conformance and references
+## A.13 Conformance and References
 
 This grammar specification defines the canonical Omega-Code tokenization, keyword set, and EBNF productions. For full conformance and correct evaluator behavior:
 
@@ -1137,4 +1260,3 @@ A parser or evaluator is considered grammatically conformant when it:
 - Accepts all positive example snippets and complete modules defined for this grammar.  
 - Rejects all negative snippets documented in the test corpus with the specified error conditions.  
 - Treats the Strict and Extended profiles according to the productions and annotations in this specification.
-
