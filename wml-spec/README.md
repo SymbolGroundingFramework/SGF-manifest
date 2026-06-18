@@ -57,7 +57,7 @@ SGF is a stack of languages, grammars, and protocols for grounded machine meanin
 
 1. **Core Lexicon** of sense-disambiguated concepts grounded in ~65 semantic primes
 2. **Synapses**: hub-and-spoke event structures with 15 fixed semantic roles for representing who did what to whom
-3. **HFF Wire protocol** – a versioned, machine‑to‑machine message format that lets services exchange grounded semantics without prior integration contracts.
+3. **HFF Wire protocol**: a versioned, machine‑to‑machine message format that lets services exchange grounded semantics without prior integration contracts.
 4. **AFP**: an act protocol (INFORM, QUERY, COMMAND, etc.) with receiver sovereignty
 5. **Omega**: a formal governance grammar with 13 primitives and a deterministic Safety Kernel
 6. **WML** is a workflow-map language for composing AI software from primitives.
