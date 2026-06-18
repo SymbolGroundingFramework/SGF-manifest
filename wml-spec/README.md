@@ -48,8 +48,8 @@ See also:
 WML is a sub-project of the **Symbol Grounding Framework (SGF)**, an 
 architecture for grounded machine meaning at a different altitude — 
 meaning representation, admissible wire protocols, and governance 
-grammar. See [the umbrella repo](../) for the full SGF context. WML and 
-SGF are sibling sub-projects: they share a commitment to structured, 
+grammar. See [the umbrella repo](https://github.com/SymbolGroundingFramework/SGF-manifest) 
+for the full SGF context. WML and SGF are related projects: they share a commitment to structured, 
 grounded computation, but they operate on different layers of the stack.
 
 
