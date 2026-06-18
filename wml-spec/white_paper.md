@@ -1,8 +1,8 @@
-\# Beyond Prompting: A Primitive-Driven Architecture for Reliable AI Software Generation
+# Beyond Prompting: A Primitive-Driven Architecture for Reliable AI Software Generation
 
 
 
-\## Author intent
+## Author intent
 
 
 
@@ -22,7 +22,7 @@ The central design priority is straightforward: stable primitives first, contrac
 
 
 
-\## The real problem
+## The real problem
 
 
 
@@ -46,7 +46,7 @@ For a broad class of applications, most of the implementation effort can be repr
 
 
 
-\## The architectural shift
+## The architectural shift
 
 
 
@@ -62,7 +62,7 @@ That is the architectural shift: stop generating infrastructure repeatedly, and 
 
 
 
-\## Stable primitives first
+## Stable primitives first
 
 
 
@@ -86,7 +86,7 @@ A stable pipeline should therefore begin with a minimal useful toolbox, not a ma
 
 
 
-\## Artifacts as working memory
+## Artifacts as working memory
 
 
 
@@ -114,7 +114,7 @@ One artifact deserves special emphasis: the implementation plan. It is the bridg
 
 
 
-\## Contracts second
+## Contracts second
 
 
 
@@ -142,7 +142,7 @@ Human readers can often infer intent from malformed output. Pipelines should not
 
 
 
-\## Workflow control third
+## Workflow control third
 
 
 
@@ -162,7 +162,7 @@ The workflow map is the assembly board of the system. The primitives are the par
 
 
 
-\## The layer model
+## The layer model
 
 
 
@@ -190,7 +190,7 @@ When project-specific logic becomes large, it is often a sign that recurring beh
 
 
 
-\## Execution loop
+## Execution loop
 
 
 
@@ -210,7 +210,7 @@ Retries and hill-climbing may still exist, but they must be explicit workflow be
 
 
 
-\## Artifact lifecycle and diagnostics
+## Artifact lifecycle and diagnostics
 
 
 
@@ -234,7 +234,7 @@ A pipeline that cannot explain why it stopped, what it consumed, what it produce
 
 
 
-\## Why this improves reliability
+## Why this improves reliability
 
 
 
@@ -250,7 +250,7 @@ This architecture does not remove engineering judgment. It still requires a good
 
 
 
-\## Phase 1 constraints
+## Phase 1 constraints
 
 
 
@@ -270,7 +270,7 @@ These constraints are not a retreat from the architecture. They are the architec
 
 
 
-\## Minimal viable pipeline
+## Minimal viable pipeline
 
 
 
@@ -286,7 +286,7 @@ That is enough to prove the architecture. It is also enough to avoid one of the 
 
 
 
-\## Recommended migration path
+## Recommended migration path
 
 
 
@@ -302,7 +302,7 @@ This path matters because the architecture should grow from the real system rath
 
 
 
-\## Reference application role
+## Reference application role
 
 
 
@@ -314,7 +314,7 @@ Its real value is not that it is flashy. Its value is that it tests whether the 
 
 
 
-\## Risks and cautions
+## Risks and cautions
 
 
 
@@ -326,7 +326,7 @@ A runner that silently retries, silently repairs, or silently guesses can destro
 
 
 
-\## Build philosophy
+## Build philosophy
 
 
 
@@ -342,7 +342,7 @@ The result is a pipeline that is quicker to assemble, easier to inspect, easier 
 
 
 
-\## Closing claim
+## Closing claim
 
 
 
