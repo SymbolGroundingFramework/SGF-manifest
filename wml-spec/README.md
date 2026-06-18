@@ -38,15 +38,19 @@ Read the article: [the-map-is-the-app.md](the-map-is-the-app.md)
 
 See also:
 [white_paper.md](white_paper.md)
+
 [tech_specs.md](tech_specs.md)
+
 [addendum.md](addendum.md)
+
 [implementation_plan.md](implementation_plan.md)
+
 [what-makes-wml-a-formal-language.md](what-makes-wml-a-formal-language.md)
 
 
 ## Relationship to the Symbol Grounding Framework (SGF)
 
-WML is one component of the broader **Symbol Grounding Framework (SGF)**.  
+WML is one component of its broader parent project, the **Symbol Grounding Framework (SGF)**.  
 
 SGF is a multi-layer architecture for grounded machine meaning. It defines:
 
@@ -59,6 +63,7 @@ SGF is a multi-layer architecture for grounded machine meaning. It defines:
 7. **WML** is a workflow-map language for composing AI software from primitives.
 
 See also:
+[Main repo for SGF](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main)
 [Formal RFC specification for SGF](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/specs)
 
 
