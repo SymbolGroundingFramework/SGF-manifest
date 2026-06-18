@@ -64,6 +64,7 @@ SGF is a multi-layer architecture for grounded machine meaning. It defines:
 
 See also:
 [Main repo for SGF](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main)
+
 [Formal RFC specification for SGF](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/specs)
 
 
