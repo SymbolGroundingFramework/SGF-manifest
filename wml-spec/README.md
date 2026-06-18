@@ -58,6 +58,7 @@ SGF is a multi-layer architecture for grounded machine meaning. It defines:
 6. **Omega**: a formal governance grammar with 13 primitives and a deterministic Safety Kernel
 7. **WML** is a workflow-map language for composing AI software from primitives.
 
-[Formal RFC specs for SGF:](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/specs)
+See also:
+[Formal RFC specification for SGF](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/specs)
 
 
