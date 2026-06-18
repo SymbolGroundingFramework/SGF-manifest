@@ -18,7 +18,7 @@ grammar — not from the mood of the model.
 
 ## The argument in one page
 
-Current AI-coding tools treat the model as the substrate: the model is 
+Most AI-coding tools treat the model as the substrate: the model is 
 asked to generate code, reason about code, and decide what to do next, 
 all in free-form character space. This conflates model with 
 infrastructure and produces three structural failure modes: 
