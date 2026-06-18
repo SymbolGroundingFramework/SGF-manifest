@@ -36,6 +36,8 @@ Start here: [CLAIMS.md](CLAIMS.md) — the argument in 2 minutes
 
 Read the article: [the-map-is-the-app.md](the-map-is-the-app.md)
 
+Read the RFC: [RFC_WORKFLOW_MAP_LANGUAGE.md](RFC_WORKFLOW_MAP_LANGUAGE.md)
+
 See also:
 
 [White Paper](white_paper.md)
