@@ -43,13 +43,21 @@ See also:
 [implementation_plan.md](implementation_plan.md)
 [what-makes-wml-a-formal-language.md](what-makes-wml-a-formal-language.md)
 
-## Part of SGF
 
-WML is a sub-project of the **Symbol Grounding Framework (SGF)**, an 
-architecture for grounded machine meaning at a different altitude — 
-meaning representation, admissible wire protocols, and governance 
-grammar. See [the umbrella repo](https://github.com/SymbolGroundingFramework/SGF-manifest) 
-for the full SGF context. WML and SGF are related projects: they share a commitment to structured, 
-grounded computation, but they operate on different layers of the stack.
+## Relationship to the Symbol Grounding Framework (SGF)
+
+WML is one component of the broader **Symbol Grounding Framework (SGF)**.  
+
+SGF is a multi-layer architecture for grounded machine meaning. It defines:
+
+1. **Core Lexicon** of sense-disambiguated concepts grounded in ~65 semantic primes
+2. Synapses: hub-and-spoke event structures with 15 fixed semantic roles
+3. **Wire protocol** – a versioned, machine‑to‑machine message format that lets services exchange grounded semantics without prior integration contracts.
+4. HFF: a wire format for sealed, signed, provenance-tracked meaning
+5. AFP: an act protocol (INFORM, QUERY, COMMAND, etc.) with receiver sovereignty
+6. **Omega**: a formal governance grammar with 13 primitives and a deterministic Safety Kernel
+7. **WML** is a workflow-map language for composing AI software from primitives.
+
+[Formal RFC specs for SGF:](https://github.com/SymbolGroundingFramework/SGF-manifest/tree/main/specs)
 
 
