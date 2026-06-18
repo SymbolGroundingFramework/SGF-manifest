@@ -2,7 +2,7 @@
 
 WML is a formal language in the same sense that FORTRAN, LISP, SQL, and JavaScript are formal languages: it has a frozen grammar, deterministic execution, and a reference interpreter that defines its semantics.
 
-**By the Chomsky criterion — the criterion that has defined "formal language" since 1956 — WML is unambiguously a formal language.** Its grammar (the frozen schema in `workflow_map_schema.txt`) is a machine-parseable context-free grammar with context-sensitive constraints. Its programs (workflow maps) are sentences in that language. Its runner (`run.py`) is the reference interpreter. Its conformance test suite (39 tests in Spec §21) expresses its operational semantics as executable specifications.
+**By the Chomsky criterion — the criterion that has defined "formal language" since 1956 — WML is unambiguously a formal language.** Its grammar (the frozen schema in `workflow_map_schema.txt`) is a machine-parseable context-free grammar with context-sensitive constraints. Its programs (workflow maps) are sentences in that language. Its runner (`run.py`) is the reference interpreter. Its conformance test suite expresses its operational semantics as executable specifications.
 
 **The honest boundary:** WML does not yet have a *mathematical* formal semantics (denotational semantics, small-step operational semantics, type soundness proofs). Its "type system" is dynamic contract checking via validators — not static typing with typing judgments, subtyping, or parametricity. Full static typing and mathematical semantics are Phase 1.5 research milestones.
 
