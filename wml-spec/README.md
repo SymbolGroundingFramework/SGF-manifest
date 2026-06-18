@@ -38,15 +38,15 @@ Read the article: [the-map-is-the-app.md](the-map-is-the-app.md)
 
 See also:
 
-[white_paper.md](white_paper.md)
+[White Paper](white_paper.md)
 
-[tech_specs.md](tech_specs.md)
+[Technical Specifications](tech_specs.md)
 
-[addendum.md](addendum.md)
+[Addendum](addendum.md)
 
-[implementation_plan.md](implementation_plan.md)
+[implementation Plan](implementation_plan.md)
 
-[what-makes-wml-a-formal-language.md](what-makes-wml-a-formal-language.md)
+[What Makes WML a Formal Language](what-makes-wml-a-formal-language.md)
 
 
 ## Relationship to the Symbol Grounding Framework (SGF)
