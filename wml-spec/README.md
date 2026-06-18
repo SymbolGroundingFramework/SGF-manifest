@@ -53,12 +53,12 @@ See also:
 
 WML is one component of its broader parent project, the **Symbol Grounding Framework (SGF)**.  
 
-SGF is a multi-layer architecture for grounded machine meaning. It defines:
+SGF is a stack of languages, grammars, and protocols for grounded machine meaning:
 
 1. **Core Lexicon** of sense-disambiguated concepts grounded in ~65 semantic primes
-2. Synapses: hub-and-spoke event structures with 15 fixed semantic roles
+2. **Synapses**: hub-and-spoke event structures with 15 fixed semantic roles for representing who did what to whom
 3. **Wire protocol** – a versioned, machine‑to‑machine message format that lets services exchange grounded semantics without prior integration contracts.
-4. HFF: a wire format for sealed, signed, provenance-tracked meaning
+4. **HFF**: a sealed wire format for transporting grounded meaning with integrity and provenance
 5. AFP: an act protocol (INFORM, QUERY, COMMAND, etc.) with receiver sovereignty
 6. **Omega**: a formal governance grammar with 13 primitives and a deterministic Safety Kernel
 7. **WML** is a workflow-map language for composing AI software from primitives.
