@@ -1,0 +1,45 @@
+# ============================================================
+# bootstrap_no_llm.toml
+# ============================================================
+# A no-LLM frontier for verifying your setup.
+#
+# Runs Stages 3, 4, 5, and 5.5 only:
+#   3.   Generate provisional microglosses (deterministic)
+#   4.   Build embedding_text v1
+#   5.   Compute first-pass embeddings (bge-small)
+#   5.5  Audit first-pass self-retrieval
+#
+# Stops at maturity tier 'embedded_v1'. No LLM is invoked. This is the
+# right config for a first run -- prove the pipeline works on your
+# machine before pointing it at a real LLM.
+#
+# Wall time: typically 10-30 minutes for Simple English (~72K senses).
+# Cost: zero (no LLM calls).
+#
+# When this works end-to-end, switch to bootstrap_top_5k.toml for the
+# full LLM-driven build.
+#
+# Edit any value below. Save and run:
+#   python run_frontier.py --config bootstrap_no_llm.toml
+#
+# (no --llm-wrapper needed for this config)
+# ============================================================
+
+name = "bootstrap_no_llm"
+target_tier = "embedded_v1"   # stop here -- no LLM stages
+
+# ----- scope: every sense (the first-pass embedder is cheap) -----
+[scope]
+top_lemmas = 1000000          # effectively all
+include_polysemous_below_rank = 1000000
+include_proper_nouns_below_rank = 1000000
+include_sparse_below_rank = 1000000
+
+# ----- embeddings -----
+[embeddings]
+diagnostic = "bge-small-en-v1"
+production = "bge-large-en-v1"
+
+# ----- quality gate (informational only for this config) -----
+[quality_gate]
+relaxed_pass_rate_min = 0.99
