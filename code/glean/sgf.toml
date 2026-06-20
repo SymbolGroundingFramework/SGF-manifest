@@ -1,0 +1,159 @@
+# =============================================================================
+# sgf.toml -- GLEAN configuration
+#
+# Every GLEAN script reads this file. Move the lexicon to a different disk:
+# change ONE line. Switch from bge-large-en to bge-small-en for development:
+# change ONE line.
+#
+# The config file is found in this order:
+#   1. Path in environment variable SGF_CONFIG
+#   2. ./sgf.toml in the current working directory
+#   3. ~/.config/sgf/sgf.toml on Linux/macOS, %APPDATA%/sgf/sgf.toml on Windows
+# =============================================================================
+
+[lexicon]
+# Path to the SGF lexicon SQLite database produced by the lexicon pipeline.
+db_path = "D:/lexicon/sgf_lexicon.db"
+
+# Which embedding method to use by default for lookups.
+# Options registered in compute_embeddings.py:
+#   "bge-small-en-v1"  (384-dim, fast, English)
+#   "bge-large-en-v1"  (1024-dim, slower, higher quality, English)
+#   "bge-m3-v1"        (1024-dim, slower still, multilingual -- future)
+#default_embedding_method = "bge-large-en-v1"
+default_embedding_method = "bge-small-en-v1"
+
+[lexicon.schema]
+# Schema mapping. Change these only if the lexicon schema evolves.
+parent_table = "sgf_lexicon"
+parent_id_col = "wiktionary_source_id"
+parent_lemma_col = "lemma"
+parent_pos_col = "pos_simple"
+parent_microgloss_col = "microgloss"
+parent_gloss_col = "gloss"
+parent_canonical_id_col = "canonical_id"
+
+embed_table = "sense_embedding"
+embed_id_col = "wiktionary_source_id"
+embed_method_col = "embedding_method"
+embed_dim_col = "embedding_dim"
+embed_vector_col = "embed"
+embed_fingerprint_col = "content_fingerprint"
+
+# =============================================================================
+# Query-time embedder. The model used to embed clause/entity queries at
+# lookup time. MUST match the lexicon's embedding method for cosine
+# similarity to be meaningful.
+# =============================================================================
+[embedder]
+# ONNX execution provider. Options: "cpu", "dml" (DirectML/AMD), "cuda" (NVIDIA).
+device = "dml"
+
+# Tokenization cap. 256 is plenty for clause-level queries.
+max_length = 256
+
+# Where to find the ONNX model files. Same Hugging Face repos as the
+# lexicon pipeline. The first call downloads them; subsequent calls use
+# the local cache.
+[embedder.model_repos]
+"bge-small-en-v1" = "Xenova/bge-small-en-v1.5"
+"bge-large-en-v1" = "Xenova/bge-large-en-v1.5"
+"bge-m3-v1"       = "Xenova/bge-m3"
+
+[embedder.tokenizer_repos]
+"bge-small-en-v1" = "BAAI/bge-small-en-v1.5"
+"bge-large-en-v1" = "BAAI/bge-large-en-v1.5"
+"bge-m3-v1"       = "BAAI/bge-m3"
+
+# =============================================================================
+# Local LLM endpoint. Used for the framing layer, lookup escalation,
+# pronoun resolution, and any other LLM-augmented step.
+#
+# Default targets a local Llama-cpp or Ollama server running on
+# localhost. Override here to point at DeepSeek, OpenAI, or another
+# OpenAI-compatible endpoint.
+# =============================================================================
+[llm]
+endpoint = "http://localhost:8080/v1/chat/completions"
+model = "llama-3.1-8b-instruct"
+api_key = ""                  # blank for local Llama-cpp; set for remote APIs
+timeout_seconds = 60
+temperature = 0.1
+max_tokens = 1024
+
+# =============================================================================
+# Lookup cascade thresholds. The four-step lookup cascade described in
+# the GLEAN info bundle:
+#   1. Exact lemma match
+#   2. Embedded cosine search (auto-accept if confident)
+#   3. LLM rerank (when cosine is ambiguous)
+#   4. Micro-lexicon mint (when no good candidate exists)
+# =============================================================================
+[lookup]
+top_k = 10
+
+# Auto-accept step 2 if the top-1 candidate is confident enough.
+auto_accept_cosine = 0.80
+auto_accept_margin = 0.05
+
+# Escalate to LLM rerank if top-1 is below this cosine OR margin too small.
+escalate_below_cosine = 0.70
+
+# If LLM is unsure too, mint a micro-lexicon entry.
+mint_threshold_confidence = 0.50
+
+# =============================================================================
+# Synapse store. The output database where compiled synapses, frames,
+# entities, and groups are written.
+# =============================================================================
+[synapse_store]
+db_path = "D:/lexicon/synapses.db"
+
+# =============================================================================
+# spaCy model for sentence/clause segmentation and dependency parsing.
+# en_core_web_sm is fast and adequate for most tasks. en_core_web_lg
+# is slower but has better NER and dependency accuracy.
+# =============================================================================
+[spacy]
+model = "en_core_web_sm"
+
+# =============================================================================
+# Coverage Gate. If more than this fraction of entities in a document
+# cannot be grounded (after all four cascade steps), HALT ingestion
+# and emit a GapReport. Default 0.02 = 2% out-of-vocabulary.
+# =============================================================================
+[coverage_gate]
+max_oov_ratio = 0.02
+halt_on_violation = false      # set true for high-integrity mode
+
+# =============================================================================
+# Layered lexicons (config stub for v1.1 -- only core+document wired).
+#
+# The full lookup cascade fans out across four layers:
+#   1. core      -- the Wiktionary-derived SGF lexicon (sgf_lexicon.db)
+#   2. domain    -- a curated domain pack (music theory, law, medicine, ...)
+#   3. corpus    -- senses minted from this user's prior documents
+#   4. document  -- senses minted while compiling THIS document
+#
+# In v1.1 only layer 1 (core, via [lexicon] above) and layer 4 (document,
+# minted in-memory during compile_document) are active. Layers 2 and 3
+# are reserved here so user configs do not need editing at v1.3 ship.
+#
+# To add a domain or corpus layer when wired:
+#   [[lexicons]]
+#   name    = "music_theory"
+#   tier    = "domain"
+#   db_path = "D:/lexicons/music_theory.db"
+#   weight  = 1.0
+# =============================================================================
+[[lexicons]]
+name    = "core"
+tier    = "core"
+db_path = "D:/lexicon/sgf_lexicon.db"
+weight  = 1.0
+
+# [[lexicons]]
+# name    = "document_mint"
+# tier    = "document"
+# db_path = ":memory:"
+# weight  = 0.5

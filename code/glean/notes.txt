@@ -1,0 +1,11 @@
+Test 1: bank lookups (warmup, confirms lookup works)
+
+text
+cd D:\glean
+python sgf_cli.py lookup bank --context "I deposited money at the bank."
+python sgf_cli.py lookup bank --context "We sat on the bank under the willow."
+
+
+Test 2: Beethoven full compile (the milestone)
+
+python compile_document.py --input beethoven.txt --doc-id beethoven_001 --workdir D:\glean\work --framing-mode deterministic
