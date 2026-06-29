@@ -19,7 +19,7 @@ The SGF Lexicon defines what can be said. It organizes all meaning along four or
 - **RELATION** — structural, causal, temporal connections
 - **PROPERTY** — attributes that inhere in entities
 
-These planes are not specializations of one another. They are distinct modes of being. Every statement in SGF tethers to exactly one plane.
+These planes are not specializations of one another. They are distinct modes of being. Every thing in SGF tethers to a primary plane (EXISTENCE, EVENT, RELATION, or PROPERTY). Its full lexical definition may involve relations that span all four planes.
 
 The lexicon uses four foundational relation types to structure knowledge:
 
