@@ -59,7 +59,7 @@ DEPENDENCIES: stdlib only (argparse, json, pathlib, urllib, time, sys)
 # =====================================================================
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-OPENROUTER_KEY = "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"
+OPENROUTER_KEY = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 OPENROUTER_MODEL = "deepseek/deepseek-v4-flash"
 
 OLLAMA_URL = "http://192.168.12.160:11434/api/generate"
