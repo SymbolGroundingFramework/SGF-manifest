@@ -1,0 +1,97 @@
+# ============================================================
+# Single search pipeline — server reads this, CLI can reuse
+# ============================================================
+# mode values for cascade stages:
+#   "always"     → stage always runs
+#   "never"      → stage never runs
+#   "when_tight" → stage runs only when top‑2 margin < margin_threshold
+
+[retrieval]
+default_policy = "snap_to_standard"
+embedder_min_coverage = 0.95
+
+[retrieval.embedder_cascade]
+default = ["bge-large-en-v1"]
+en = ["bge-large-en-v1"]
+multilingual = ["bge-large-en-v1"]
+
+# -------- Policies --------
+[retrieval.policies.snap_to_standard]
+rewrite_to_standard_form = true
+preserve_specialist_terms = true
+audience_tier = "general"
+exclude_social_status = ["slur", "offensive"]
+exclude_temporal_status = ["obsolete"]
+min_tier_returned = "raw"
+
+[retrieval.policies.snap_to_standard.demote_register]
+slang = 0.08
+vulgar = 0.15
+poetic = 0.03
+
+[retrieval.policies.snap_to_standard.demote_temporal]
+dated = 0.05
+archaic = 0.10
+
+[retrieval.policies.snap_to_standard.demote_social]
+flagged = 0.10
+
+# ============================================================
+# [search_pipeline] – server-side cascade (also used by CLI)
+# ============================================================
+
+[search_pipeline]
+cosine_top_n = 20
+cosine_top_n_high_polyseme = 100
+high_polyseme_threshold = 20
+
+# -------- Stage 2: cross-encoder reranker --------
+# mode: "always" | "never" | "when_tight"
+[search_pipeline.reranker]
+mode = "when_tight"
+margin_threshold = 0.05
+top_n = 10
+models = ["bge-reranker-large", "bge-reranker-base"]  # removed unavailable v2-m3
+
+# -------- Stage 3: BM25 lexical scoring --------
+# mode: "always" | "never" | "when_tight"
+[search_pipeline.bm25]
+mode = "always"
+margin_threshold = 0.04
+abs_confidence_floor = 0.0
+top_n_out = 3
+fusion = "weighted"
+weighted_alpha = 0.7
+stemmer = "porter"
+lowercase = true
+
+# -------- Stage 4: LLM tiebreak --------
+# mode: "always" | "never" | "when_tight" | "when_tight_divergent"
+[search_pipeline.llm_tiebreak]
+mode = "never"
+margin_threshold = 0.05
+abs_confidence_floor = 0.0
+divergent_axes = ["definition_tier", "source_type"]
+top_n_to_llm = 5
+llm_wrapper = "llm_wrapper.py"
+tier = "flash"
+temp = 0.0
+
+# ============================================================
+# Improving glossary and ontology
+# ============================================================
+
+[improve]
+enabled = true
+top_n_to_improve = 5
+script_path = "improve_glossary_and_ontology.py"
+embed_service_url = "http://localhost:18401"
+llm_source = "cloud"
+generate_ontology = true
+generate_events = true
+avoid_floating_nodes = true
+include_events_for = ["PROPN", "VERB"]
+
+
+
+
