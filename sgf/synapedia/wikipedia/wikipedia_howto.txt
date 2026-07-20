@@ -1,0 +1,27 @@
+Loading Wikipedia Article Summaries into SQLite
+
+Source URL:
+https://downloads.dbpedia.org/repo/dbpedia/text/short-abstracts/2021.12.01/short-abstracts_lang=en.ttl.bz2
+
+Step 1: Download
+curl -o wikipedia_abstracts.ttl.bz2 https://downloads.dbpedia.org/repo/dbpedia/text/short-abstracts/2021.12.01/short-abstracts_lang=en.ttl.bz2
+
+Step 2: Decompress using any extraction tool. Name the output file: abstracts_export.ttl
+
+Step 3: Convert TTL to JSON
+python extract_abstracts.py
+
+This reads abstracts_export.ttl and outputs abstracts.json (~800 MB, 6 million articles).
+
+Step 4: Load JSON into SQLite
+python load_wikipedia.py
+
+This reads abstracts.json and outputs wikipedia.db (~650 MB).
+
+Done. You now have a local SQLite database with all English Wikipedia article summaries, keyed by title.
+
+Required scripts:
+- extract_abstracts.py   (TTL to JSON)
+- load_wikipedia.py      (JSON to SQLite)
+
+Make sure extract_abstracts.py points to abstracts_export.ttl in the parse() call.
