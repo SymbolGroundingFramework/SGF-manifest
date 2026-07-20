@@ -1,0 +1,47 @@
+{
+  "_comment": "spaCy POS tag -> SGF pos_simple mapping. Used by entity_census.py and clause_to_synapse.py to classify tokens. The SGF lexicon uses the value set on the right.",
+
+  "spacy_to_sgf": {
+    "NOUN":  "noun",
+    "VERB":  "verb",
+    "PROPN": "name",
+    "ADJ":   "adj",
+    "ADV":   "adv",
+    "DET":   "det",
+    "ADP":   "prep",
+    "CONJ":  "conj",
+    "CCONJ": "conj",
+    "SCONJ": "conj",
+    "NUM":   "num",
+    "PART":  "particle",
+    "PRON":  "pron",
+    "INTJ":  "intj",
+    "PUNCT": "punct",
+    "SYM":   "symbol",
+    "AUX":   "verb",
+    "X":     "noun",
+    "SPACE": null
+  },
+
+  "_comment_2": "Which sgf_simple values count as entity-bearing for census purposes. Names and nouns produce hop-worthy nodes; the rest are syntactic glue.",
+  "sgf_to_is_entity": {
+    "name":     true,
+    "noun":     true,
+    "verb":     false,
+    "adj":      false,
+    "adv":      false,
+    "det":      false,
+    "prep":     false,
+    "conj":     false,
+    "num":      false,
+    "particle": false,
+    "pron":     false,
+    "intj":     false,
+    "punct":    false,
+    "symbol":   false
+  },
+
+  "defaults": {
+    "unknown_spacy_to_sgf": "noun"
+  }
+}

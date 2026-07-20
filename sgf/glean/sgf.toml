@@ -1,0 +1,191 @@
+# =============================================================================
+# sgf.toml -- GLEAN configuration (v3.2)
+#
+# v3.2 changes:
+#   - Added [custom_lexicon] section for domain TBox
+#   - Added [accuracy] section for entity resolution modes
+#   - Added [ghost_registry] section for metonymic shift tracking
+#   - synapse_store.db is now the ABox (synapedia_synapse table)
+#   - custom_lexicon.db is the domain TBox (doc.*, dyn.*, corp.*)
+#
+# The config file is found in this order:
+#   1. Path in environment variable SGF_CONFIG
+#   2. ./sgf.toml in the current working directory
+#   3. ~/.config/sgf/sgf.toml on Linux/macOS, %APPDATA%/sgf/sgf.toml on Windows
+# =============================================================================
+
+[lexicon]
+# Path to the SGF lexicon SQLite database. Used only by the search
+# server; GLEAN no longer opens this directly.
+db_path = "D:/lexicon/sgf_lexicon.db"
+
+# Which embedding method GLEAN uses when sending query text to the
+# search server. Must be one the server has loaded. See /health.
+default_embedding_method = "bge-large-en-v1"
+
+
+# =============================================================================
+# Search server -- the universal entry point for all lexicon work.
+# Start it once in a separate terminal:
+#   python glean_search_server.py --lexicon D:/lexicon/sgf_lexicon.db
+# Then every GLEAN run talks to it over HTTP.
+# =============================================================================
+[search_server]
+url = "http://127.0.0.1:8400"
+
+# Auth token. Only required when the server is on a non-loopback address.
+# When blank, GLEAN reads ~/.glean/auth.toml or the GLEAN_API_TOKEN env var.
+api_token = ""
+
+timeout_seconds = 30
+
+
+# =============================================================================
+# Lookup cascade. The four-step cascade is the same as v1.2, but now
+# steps 1-2 are HTTP calls to the search server.
+#
+#   1. Exact lemma match (server /lookup/lemma)
+#   2. Cosine search with lemma restriction (server /search)
+#   3. LLM rerank (only if [llm].wrapper_path is configured)
+#   4. Mint a document-local canonical_id when nothing fits
+# =============================================================================
+[lookup]
+top_k = 10
+
+# Auto-accept the server's top result at this cosine or above.
+auto_accept_cosine = 0.80
+
+# Escalate to LLM rerank if top-1 is below this; below the mint threshold
+# means we still mint rather than ship a low-confidence answer.
+escalate_below_cosine = 0.65
+mint_threshold_confidence = 0.50
+
+# Which named search-server policy to apply on every GLEAN lookup.
+# Most GLEAN runs want snap_to_standard: kiddo -> children, dad -> father,
+# while preserving specialist terms (leukemia stays leukemia).
+# For first-person slang-heavy narrators, switch to preserve_register.
+policy = "snap_to_standard"
+
+
+# =============================================================================
+# LLM wrapper. Used for the framing layer's borderline cases, lookup
+# step-3 reranks, and any other LLM-augmented step.
+#
+# WRAPPER CONTRACT (subprocess; same as the lexicon pipeline):
+#     python <wrapper_path> --in-file <prompt> --out-file <response>
+#                           [--tier <name>] [--temp <name>]
+#
+# The wrapper handles auth, provider routing, retries, etc. GLEAN never
+# sees the LLM provider. If wrapper_path is blank or missing, GLEAN
+# silently runs deterministic-only mode (no rerank, no framing-mode-llm).
+# =============================================================================
+[llm]
+wrapper_path = ""                # set to your llm_wrapper.py path
+tier         = "worker"          # passed to wrapper as --tier
+temp         = "logical"         # passed to wrapper as --temp
+policy       = ""                # passed to wrapper as --policy when non-empty
+scratch_dir  = ""                # blank = current working dir
+timeout_seconds = 120
+keep_scratch_files = false
+
+
+# =============================================================================
+# Synapse store (Layer 3 ABox). The output database where compiled synapses,
+# frames, entities, and groups are written. Schema is extended in v3.2 to
+# use synapedia_synapse, synapedia_spoke, synapedia_group, etc.
+# =============================================================================
+[synapse_store]
+db_path = "D:/lexicon/synapses.db"
+
+
+# =============================================================================
+# Custom lexicon (Layer 2 domain TBox). Stores document-specific entities
+# (doc.*), metonymic dynamic instances (dyn.*), and corpus-level entities
+# (corp.*). Separate DB per corpus.
+#
+# If not set, minted entities are written to the main synapedia.db with
+# source_type='custom' and definition_tier='GHOST'.
+# =============================================================================
+[custom_lexicon]
+# Path to the custom lexicon DB for this corpus.  Typically:
+#   D:/glean/custom_lexicon_{corpus_name}.db
+# Leave blank to skip custom lexicon writes.
+path = ""
+
+# Corpus name (used for the `corpus` column in the custom lexicon entry table).
+corpus_name = "default"
+
+
+# =============================================================================
+# Ghost registry. Tracks metonymic shifts and unresolved entities for
+# asynchronous airlock processing.
+#
+# If not set, ghost entries are written to a file next to the custom lexicon.
+# =============================================================================
+[ghost_registry]
+# Path to the ghost registry DB.  Typically:
+#   D:/glean/ghost_registry.db
+# Leave blank to derive from custom_lexicon.path.
+path = ""
+
+
+# =============================================================================
+# Accuracy mode. Controls how strictly entities are resolved.
+#
+#   casual    -- Embedding-only lookup.  No metonymic detection.
+#                Fast, good for browsing.
+#   standard  -- Full cascade + SOAM verification.  Metonymic shifts
+#                create ghost entries.  Default for document ingestion.
+#   rigorous  -- Full cascade + LLM escalation.  Ghost-only minting
+#                (no automatic minting without airlock approval).
+#                Produces ProofTraces.  For legal/medical/aerospace.
+# =============================================================================
+[accuracy]
+mode = "standard"
+
+
+# =============================================================================
+# Verb dimensions. The 3-tier verb engine from the SGF substrate.
+#   standard         -- ~10 deterministic dims from spaCy morphology
+#   high_fidelity    -- ~20 dims; adds evidentiality, volition, modality
+#                       category. Some dims require LLM enrichment.
+#   archival         -- ~41 dims; adds clusivity, obviation, directionals.
+#                       LLM-enrichment required for most.
+#
+# Downsampling is possible. Upsampling is not. If you compile at
+# 'standard' and later want 'archival', you have to recompile.
+# =============================================================================
+[verb_features]
+tier = "standard"     # standard | high_fidelity | archival
+
+
+# =============================================================================
+# spaCy model. en_core_web_sm is fast, good for testing; 
+# en_core_web_lg has much better NER.
+# =============================================================================
+[spacy]
+model = "en_core_web_lg"
+
+
+# =============================================================================
+# Coverage Gate. If more than this fraction of entities in a document
+# cannot be grounded (after all cascade steps), HALT ingestion and
+# emit a GapReport. Default 0.02 = 2%.
+# =============================================================================
+[coverage_gate]
+max_oov_ratio = 0.02
+halt_on_violation = false
+
+
+# =============================================================================
+# Minimum maturity tier the lexicon must have for senses GLEAN will
+# accept. Anything below this is treated as out-of-vocabulary and
+# minted as a doc-local id, even if a sense exists in the lexicon.
+#
+# Tier order: raw < provisional < embedded_v1 < improved < embedded_v2
+#             < clustered < related
+# Default 'improved' enforces the no-embarrassment bar: never return
+# a raw or provisional sense to a downstream consumer.
+# =============================================================================
+[tier_floor]
+min_tier = "improved"
