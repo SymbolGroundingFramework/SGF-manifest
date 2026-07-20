@@ -1,0 +1,15 @@
+Downloading Wiktionary JSONL Data
+
+The English Wiktionary data is hosted at kaikki.org and produced by the Wiktextract project. The current dump is from 2026-06-01. It is about 22 GB uncompressed, or 2.6 GB gzipped.
+
+Step 1: Download the data
+
+Open a terminal and run this command:
+
+curl -O https://kaikki.org/dictionary/raw-wiktextract-data.jsonl
+
+Step 2: Load into SQLite
+
+Use the script load_wiktionary_to_db.py:
+
+python load_wiktionary_to_db.py --source raw-wiktextract-data.jsonl --target wiktionary_raw.db --lang-code en --batch 5000
