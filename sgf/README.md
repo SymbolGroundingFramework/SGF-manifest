@@ -1,4 +1,4 @@
-# SGF — The Synapedia Grammar Framework
+# SGF — The Symbol Grounding Framework
 
 ### A Meaning Infrastructure for Verifiable Knowledge Graphs
 
