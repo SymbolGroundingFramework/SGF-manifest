@@ -506,6 +506,4 @@ The Wisdom Lattice is the simplest architecture that survives the specified edge
 
 
 
----
-
 *This is an Informational RFC. Reference implementation is Apache 2.0 open source. No vendor lock-in. The architecture is the standard, not the code.*
