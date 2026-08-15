@@ -39,6 +39,7 @@ def create_schema(db_path: str) -> None:
             ref_count INTEGER NOT NULL DEFAULT 0,
             example_sentences TEXT,
             categories_json TEXT,
+            synonyms_json TEXT,                        -- NEW: synonyms from WordNet/Wiktionary
             synset_offset INTEGER, word_index INTEGER, lex_id INTEGER,
             lex_domain TEXT, freq_count INTEGER DEFAULT 0, ili TEXT,
             is_microgloss_provisional INTEGER DEFAULT 1,
@@ -391,4 +392,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
