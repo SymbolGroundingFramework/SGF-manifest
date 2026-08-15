@@ -189,9 +189,9 @@ def main():
             INSERT INTO synapedia_entry
                 (lemma, pos_original, pos_ud, gloss, source_type, definition_tier, language,
                  is_prime, is_molecule, is_instance, example_sentences, categories_json,
-                 embedding_text_needs_rebuild)
+                 synonyms_json, embedding_text_needs_rebuild)
             VALUES (?, ?, ?, ?, 'wiktionary', 'LEXICAL_EXTENSION', 'en',
-                    0, 0, 0, ?, ?, 1)
+                    0, 0, 0, ?, ?, ?, 1)
         """, (
             lemma,
             pos_wik,
@@ -199,6 +199,7 @@ def main():
             primary_gloss,
             examples_json,
             categories_json,
+            synonyms_json,
         ))
 
         syn_id = syn_cur.lastrowid
