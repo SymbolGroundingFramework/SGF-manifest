@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 """
-load_synapedia_from_wordnet_db.py — Fixed version with UD POS columns, event tables, and attribute key-value.
+load_synapedia_from_wordnet_db.py — Fixed version with UD POS columns, event tables, attribute key-value, AND synonyms.
 
 Reads wordnet.db and populates synapedia.db with:
   - WordNet entries (lemma, pos_original, pos_ud, gloss, etc.)
   - Synset mappings
+  - Synonyms derived from synset membership (all words in a synset)
   - Relations (IS-A, HAS-PART, HAS-MEMBER, HAS-INSTANCE, ANTONYM, DERIVATION)
   - Event tables (synapse, spoke, entry_synapse, link, equivalence, ghost, group, group_member)
   - Marks embedding_text_needs_rebuild = 1 for later processing.
 
 NO microgloss, canonical ID, or embedding text generation (delegated to microgloss_v7_final.py).
 
-FIXES:
-  - canonical_entry_id is now TEXT type (was incorrectly INTEGER in some versions)
-  - canonical_id kept as TEXT for backward compatibility
-  - Both columns default to NULL
-  - Added embedding, bow, improved_at columns to synapedia_entry
-  - Fixed synapedia_has_attribute to use attribute_key + attribute_value + trust_level
-  - Created event tables (synapse, spoke, entry_synapse, link, equivalence, ghost, group, group_member)
+CHANGES IN THIS VERSION:
+  - Added `synonyms_json TEXT` column to `synapedia_entry`.
+  - After synset mappings are built, populates `synonyms_json` from
+    synset membership (JSON array of other lemmas in the same synset).
+  - So `bank` (sense 1) and `depository financial institution` (same synset)
+    appear as synonyms.
 
 Usage:
     python load_synapedia_from_wordnet_db.py --wordnet-db wordnet.db --synapedia-db synapedia.db --reset
@@ -87,7 +87,7 @@ def wn_pos_to_ud(pos_short: str) -> str:
     return WN_SHORT_TO_UD.get(pos_short, "NOUN")
 
 
-# ── Schema (FIXED: canonical_entry_id is TEXT, added embedding/bow/improved_at, attribute key-value, event tables) ───
+# ── Schema (FIXED: added synonyms_json, canonical_entry_id is TEXT, etc.) ───
 SCHEMA_SQL = """
 DROP TABLE IF EXISTS synapedia_entry;
 DROP TABLE IF EXISTS synapedia_source_xref;
@@ -130,6 +130,8 @@ CREATE TABLE synapedia_entry (
     ref_count INTEGER NOT NULL DEFAULT 0,
     example_sentences TEXT,
     categories_json TEXT,
+    -- NEW: synonyms derived from synset membership
+    synonyms_json TEXT,
     synset_offset INTEGER,
     word_index INTEGER,
     lex_id INTEGER,
@@ -616,6 +618,32 @@ def main():
         syn_conn.commit()
     print(f"  Inserted {len(mapping_rows)} mappings.")
 
+    # ═════ Step 2b: Populate synonyms from synset membership ═════
+    print("Populating WordNet synonyms from synset membership...")
+    c.execute("""
+        WITH synset_synonyms AS (
+            SELECT wsm.synapedia_id AS entry_id,
+                   json_group_array(DISTINCT e2.lemma) AS synonyms
+            FROM wordnet_synset_mapping wsm
+            JOIN wordnet_synset_mapping wsm2
+              ON wsm.synset_offset = wsm2.synset_offset
+             AND wsm.pos = wsm2.pos
+             AND wsm.synapedia_id != wsm2.synapedia_id
+            JOIN synapedia_entry e2 ON e2.entry_id = wsm2.synapedia_id
+            GROUP BY wsm.synapedia_id
+            HAVING COUNT(DISTINCT e2.lemma) > 0
+        )
+        UPDATE synapedia_entry
+        SET synonyms_json = (
+            SELECT synonyms FROM synset_synonyms
+            WHERE synset_synonyms.entry_id = synapedia_entry.entry_id
+        )
+        WHERE entry_id IN (SELECT entry_id FROM synset_synonyms)
+          AND (synonyms_json IS NULL OR synonyms_json = '')
+    """)
+    syn_conn.commit()
+    print(f"  Updated {c.rowcount} entries with WordNet synonyms.")
+
     # ═════ Step 3: Relations ════════════════════════════════
 
     print("Reading relations...")
@@ -746,6 +774,10 @@ def main():
     for t in tables:
         cnt = c.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
         print(f"  {t}: {cnt:,}")
+
+    # Also report how many entries now have synonyms
+    syn_count = c.execute("SELECT COUNT(*) FROM synapedia_entry WHERE synonyms_json IS NOT NULL AND synonyms_json != ''").fetchone()[0]
+    print(f"  synapedia_entry with synonyms: {syn_count:,}")
 
     syn_conn.execute("DETACH DATABASE wn")
     syn_conn.close()
