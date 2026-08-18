@@ -618,6 +618,10 @@ def main():
         syn_conn.commit()
     print(f"  Inserted {len(mapping_rows)} mappings.")
 
+    print("Building indexes after raw WordNet data import...")
+    syn_conn.executescript(INDEX_SQL)
+    syn_conn.commit()
+
     # ═════ Step 2b: Populate synonyms from synset membership ═════
     print("Populating WordNet synonyms from synset membership...")
     c.execute("""
