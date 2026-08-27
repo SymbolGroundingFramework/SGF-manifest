@@ -53,6 +53,9 @@ DEFAULT_POLICY_PATH = GLEAN_HOME / POLICY_FILENAMES[0]
 DEFAULT_AUTH_PATH = GLEAN_HOME / "auth.toml"
 DEFAULT_DEFINITION_TIER = "CORE_ONTOLOGY"
 DEFAULT_SOURCE_TYPE = "core"
+DEFAULT_BATCH_EMBED_SIZE = 128
+DEFAULT_BATCH_EMBED_FORCE = False
+DEFAULT_EMBEDDER_DEVICE = "auto"
 
 TIER_RANK_MAP = {
     "CORE_ONTOLOGY": 1, "CORE_KNOWLEDGE": 2, "LEXICAL_EXTENSION": 3,
@@ -267,6 +270,11 @@ def vec_from_blob(blob: bytes) -> List[float]:
     if n == 0:
         return []
     return list(struct.unpack(f"<{n}f", blob))
+
+def vec_to_blob(v: List[float]) -> bytes:
+    if not v:
+        return b""
+    return struct.pack(f"<{len(v)}f", *v)
 
 class LexiconBackend:
     def __init__(self, db_path: Path):
@@ -571,11 +579,12 @@ def apply_policy(
 # EmbedderProxy
 # ---------------------------------------------------------------------------
 class EmbedderProxy:
-    def __init__(self, preload_method=None):
+    def __init__(self, preload_method: Optional[str] = None, device: Optional[str] = None):
+        self.device = device or DEFAULT_EMBEDDER_DEVICE
         self._cache: Dict[str, Any] = {}
         self._available = self._probe()
         if self._available and preload_method:
-            logger.info(f"Preloading embedder: {preload_method}...")
+            logger.info(f"Preloading embedder: {preload_method} (device mode: {self.device})...")
             t0 = _time.time()
             self.batch_embed(["warmup"], preload_method)
             logger.info(f"Embedder loaded in {_time.time()-t0:.1f}s")
@@ -587,6 +596,22 @@ class EmbedderProxy:
         except ImportError:
             logger.warning("onnxruntime not installed; /embed endpoint disabled.")
             return False
+
+    def _resolve_providers(self) -> List[str]:
+        try:
+            import onnxruntime
+            avail = onnxruntime.get_available_providers()
+        except Exception:
+            return ["CPUExecutionProvider"]
+
+        dev = (self.device or DEFAULT_EMBEDDER_DEVICE).lower()
+        if dev in ("cuda", "auto") and "CUDAExecutionProvider" in avail:
+            return ["CUDAExecutionProvider", "CPUExecutionProvider"]
+        if dev in ("rocm", "auto") and "ROCMExecutionProvider" in avail:
+            return ["ROCMExecutionProvider", "CPUExecutionProvider"]
+        if dev in ("cuda", "rocm"):
+            logger.warning(f"Device '{dev}' requested, but corresponding execution provider not available in ONNX runtime ({avail}). Falling back to CPU.")
+        return ["CPUExecutionProvider"]
 
     def available(self) -> bool:
         return self._available
@@ -607,7 +632,9 @@ class EmbedderProxy:
         if batch_key not in self._cache:
             onnx_path = hf_hub_download(onnx_repo, "onnx/model.onnx")
             tok_path = hf_hub_download(tok_repo, "tokenizer.json")
-            sess = onnxruntime.InferenceSession(onnx_path, providers=["CPUExecutionProvider"])
+            providers = self._resolve_providers()
+            sess = onnxruntime.InferenceSession(onnx_path, providers=providers)
+            logger.info(f"Initialized ONNX session for '{method}' on providers: {sess.get_providers()}")
             tok = Tokenizer.from_file(tok_path)
             tok.enable_truncation(max_length=256)
             tok.enable_padding(length=256)
@@ -969,6 +996,79 @@ def make_app() -> FastAPI:
             raise HTTPException(503, "No embedders loaded")
         v = _state.embedder.embed(text, method)
         return {"vector": v, "embedding_method": method, "dim": len(v)}
+
+    @app.post("/batch_embed_db")
+    @app.post("/recompute_db")
+    def batch_embed_db(req: Optional[Dict[str, Any]] = None, x_api_key: Optional[str] = Header(None)):
+        _check_auth(x_api_key); assert _state is not None
+        if not _state.embedder.available():
+            raise HTTPException(503, "Embedder runtime not installed")
+
+        req_data = req or {}
+        batch_size = req_data.get("batch_size") if "batch_size" in req_data else DEFAULT_BATCH_EMBED_SIZE
+        force = req_data.get("force") if "force" in req_data else DEFAULT_BATCH_EMBED_FORCE
+        method = req_data.get("embedding_method") or "bge-large-en-v1"
+
+        db_path = _state.backend.db_path
+        conn = sqlite3.connect(db_path)
+        cur = conn.cursor()
+
+        if force:
+            cur.execute("""
+                SELECT entry_id, embedding_text, gloss, lemma
+                FROM synapedia_entry
+            """)
+        else:
+            cur.execute("""
+                SELECT entry_id, embedding_text, gloss, lemma
+                FROM synapedia_entry
+                WHERE embedding IS NULL OR embedding_text_needs_rebuild = 1
+            """)
+
+        rows = cur.fetchall()
+        if not rows:
+            conn.close()
+            return {"status": "completed", "embedded_count": 0, "message": "No entries require embedding."}
+
+        total_count = len(rows)
+        logger.info(f"Starting batch embedding for {total_count} entries (batch_size={batch_size}, method={method})...")
+
+        total_embedded = 0
+        for i in range(0, total_count, batch_size):
+            batch_rows = rows[i:i + batch_size]
+            batch_ids = []
+            batch_texts = []
+
+            for eid, emb_text, gloss, lemma in batch_rows:
+                text = (emb_text or gloss or lemma or "").strip()
+                if not text:
+                    text = lemma or f"entry_{eid}"
+                batch_ids.append(eid)
+                batch_texts.append(text)
+
+            vectors = _state.embedder.batch_embed(batch_texts, method)
+
+            update_tuples = []
+            for eid, vec in zip(batch_ids, vectors):
+                blob = vec_to_blob(vec)
+                update_tuples.append((blob, eid))
+
+            cur.executemany("""
+                UPDATE synapedia_entry
+                SET embedding = ?, embedding_text_needs_rebuild = 0
+                WHERE entry_id = ?
+            """, update_tuples)
+            conn.commit()
+            total_embedded += len(update_tuples)
+            logger.info(f"  Batch embedded {total_embedded}/{total_count} entries")
+
+        conn.close()
+
+        thread = threading.Thread(target=_reload_in_background, daemon=True)
+        thread.start()
+        thread.join(timeout=30)
+
+        return {"status": "completed", "embedded_count": total_embedded, "message": f"Successfully embedded {total_embedded} entries."}
 
     @app.post("/search")
     def search(req: SearchRequest, x_api_key: Optional[str] = Header(None)):
@@ -1501,6 +1601,8 @@ def main():
     p.add_argument("--llm-wrapper", default=None)
     p.add_argument("--reload-interval", type=float, default=0.0,
                    help="Seconds between automatic lexicon reloads (0 = disabled)")
+    p.add_argument("--device", default="auto", choices=["auto", "cuda", "rocm", "cpu"],
+                   help="Execution device for ONNX embedder (auto, cuda, rocm, cpu)")
     args = p.parse_args()
 
     setup_logging(args.verbose)
@@ -1532,7 +1634,7 @@ def main():
 
     cascade_en = backend.cascade_for_language("en", embedder_cascade, min_coverage)
     preload = cascade_en[0] if cascade_en else None
-    embedder = EmbedderProxy(preload_method=preload)
+    embedder = EmbedderProxy(preload_method=preload, device=args.device)
 
     # --- Load pipeline config from TOML ---
     with open(policy_path, "rb") as f:

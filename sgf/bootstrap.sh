@@ -152,6 +152,13 @@ DO_RUN_MICROGLOSS=$(prompt_yn "  Run create_microgloss.py & build_fragment_index
 echo
 
 # ------------------------------------------------------------------------------
+# STEP 8: Batch Embedding Prompt (Full Database Sweep)
+# ------------------------------------------------------------------------------
+echo "[Step 8] Batch Embedding (Full Database Vector Sweep)"
+DO_BATCH_EMBED_DB=$(prompt_yn "  Run batch vector embedding sweep on synapedia.db?")
+echo
+
+# ------------------------------------------------------------------------------
 # SUMMARY & CONFIRMATION
 # ------------------------------------------------------------------------------
 echo "======================================================================"
@@ -164,6 +171,7 @@ echo "  4. Update Synapedia from Wiktionary: $([ "$DO_UPDATE_SYNAPEDIA_WIKTIONAR
 echo "  5. Import Wikipedia raw data:       $([ "$DO_IMPORT_WIKIPEDIA_RAW" = "true" ] && echo "YES" || echo "NO")"
 echo "  6. Update Synapedia from Wikipedia: $([ "$DO_UPDATE_SYNAPEDIA_WIKIPEDIA" = "true" ] && echo "YES" || echo "NO")"
 echo "  7. Postprocessing (Microgloss):     $([ "$DO_RUN_MICROGLOSS" = "true" ] && echo "YES" || echo "NO")"
+echo "  8. Batch Vector Embedding:           $([ "$DO_BATCH_EMBED_DB" = "true" ] && echo "YES" || echo "NO")"
 echo "======================================================================"
 echo
 
@@ -301,6 +309,50 @@ if [ "$DO_RUN_MICROGLOSS" = "true" ]; then
         "$PYTHON" "$SGF_DIR/synapedia/bootstrapping/create_microgloss.py" --target "$SYNAPEDIA_DB" --force
         "$PYTHON" "$SGF_DIR/synapedia/bootstrapping/build_fragment_index.py" --db "$SYNAPEDIA_DB"
         echo "Step 7 completed. Synapedia DB postprocessed: $(get_file_info "$SYNAPEDIA_DB")"
+    else
+        echo "ERROR: Synapedia DB ($SYNAPEDIA_DB) not found."
+    fi
+    echo
+fi
+
+# ------------------------------------------------------------------------------
+# EXECUTION STEP 8: Batch Embedding (Full Database Sweep)
+# ------------------------------------------------------------------------------
+if [ "$DO_BATCH_EMBED_DB" = "true" ]; then
+    echo ">>> Running Step 8: Performing batch embedding sweep on synapedia.db..."
+    if [ -f "$SYNAPEDIA_DB" ]; then
+        SERVER_PORT=8400
+        SERVER_LOG="$SGF_DIR/search_server_step8.log"
+        echo "Starting search server in background on port $SERVER_PORT (device: auto)..."
+        "$PYTHON" "$SGF_DIR/search_server/search_server.py" --lexicon "$SYNAPEDIA_DB" --port "$SERVER_PORT" --device auto > "$SERVER_LOG" 2>&1 &
+        SERVER_PID=$!
+        echo "Search server launched with PID: $SERVER_PID"
+
+        echo "Waiting for search server to be ready..."
+        READY=false
+        for i in {1..30}; do
+            if curl -s "http://localhost:$SERVER_PORT/health" > /dev/null 2>&1; then
+                READY=true
+                break
+            fi
+            sleep 10
+        done
+
+        if [ "$READY" = "true" ]; then
+            echo "Search server is up and healthy. Kicking off batch embedding sweep via curl..."
+            curl -X POST "http://localhost:$SERVER_PORT/batch_embed_db" \
+                 -H "Content-Type: application/json" \
+                 -d '{"batch_size": 128}'
+            echo
+            echo "Batch embedding sweep request completed."
+        else
+            echo "ERROR: Search server failed to start within 30 seconds. Check $SERVER_LOG"
+        fi
+
+        echo "Stopping search server (PID: $SERVER_PID)..."
+        kill "$SERVER_PID" 2>/dev/null || true
+        wait "$SERVER_PID" 2>/dev/null || true
+        echo "Step 8 completed. Synapedia DB embedded: $(get_file_info "$SYNAPEDIA_DB")"
     else
         echo "ERROR: Synapedia DB ($SYNAPEDIA_DB) not found."
     fi

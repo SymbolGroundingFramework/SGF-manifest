@@ -1,0 +1,14 @@
+app/
+
+
+# Ignore large machine learning binary extensions
+*.safetensors
+*.bin
+*.gguf
+*.pt
+*.ckpt
+
+**/__pycache__/
+sgf/sourcedata/
+sgf/*.db
+antigravity.toml
