@@ -158,6 +158,7 @@ def clean_categories(categories, lang_code="en"):
     """Strip language prefix from category names.
     
     Wiktionary categories often have a prefix like "en:Tools", "de:Werkzeuge".
+    Categories in Kaikki/wiktextract JSON can be strings or dicts (e.g. {"name": "..."}).
     We strip the prefix generically (any XX: pattern) and deduplicate.
     """
     if not categories:
@@ -168,16 +169,27 @@ def clean_categories(categories, lang_code="en"):
     for cat in categories:
         if not cat:
             continue
+        if isinstance(cat, dict):
+            cat_str = cat.get("name", "") or cat.get("category", "") or ""
+        elif isinstance(cat, str):
+            cat_str = cat
+        else:
+            continue
+        
+        if not isinstance(cat_str, str):
+            continue
+
+        cat_str = cat_str.strip()
         # Strip any XX: prefix (language code + colon)
-        if ":" in cat:
+        if ":" in cat_str:
             # Only strip if the prefix is a known language code pattern (2-3 letters)
-            prefix, remainder = cat.split(":", 1)
+            prefix, remainder = cat_str.split(":", 1)
             if prefix.isalpha() and len(prefix) <= 3:
-                cat = remainder
-        cat = cat.strip()
-        if cat and cat not in seen:
-            cleaned.append(cat)
-            seen.add(cat)
+                cat_str = remainder.strip()
+
+        if cat_str and cat_str not in seen:
+            cleaned.append(cat_str)
+            seen.add(cat_str)
     
     return cleaned if cleaned else None
 
@@ -404,7 +416,7 @@ def main():
             gloss = " ".join(glosses) if glosses else ""
             raw_gloss = " ".join(raw_glosses) if raw_glosses else gloss
 
-            categories = clean_categories(sense.get("categories"), lang_code)
+            categories = clean_categories(sense.get("categories") or obj.get("categories"), lang_code)
             examples = extract_examples(sense)
             synonyms = extract_synonyms(sense)
 
